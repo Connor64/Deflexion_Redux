@@ -1,0 +1,46 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
+
+namespace Deflexion_Redux {
+    class Sprite {
+
+        public Texture2D Texture;
+        public Vector2 Position;
+        public float Rotation;
+        public Vector2 Origin = Vector2.Zero;
+        public Vector2 Scale;
+        public float Layer;
+
+        public Vector2 textureSize;
+
+        public Sprite(Texture2D texture, Vector2 position, float rotation, Vector2 scale, float layer) {
+            Texture = texture;
+            Position = position;
+            Rotation = rotation;
+            Scale = scale;
+            Layer = layer;
+
+            textureSize = new Vector2(texture.Width * scale.X, texture.Height * scale.Y);
+        }
+
+        public Sprite(Texture2D texture, Vector2 position, float rotation, Vector2 scale, float layer, Vector2 origin) {
+            Texture = texture;
+            Position = position;
+            Rotation = rotation;
+            Origin = origin;
+            Scale = scale;
+            Layer = layer;
+
+            textureSize = new Vector2(texture.Width * scale.X, texture.Height * scale.Y);
+        }
+
+        protected Sprite() {}
+
+        public void draw(SpriteBatch spriteBatch) {
+            spriteBatch.Draw(Texture, Position, new Rectangle(0, 0, Texture.Width, Texture.Height), Color.White, Rotation, new Vector2(0, 0), Scale, SpriteEffects.None, Layer);
+        }
+    }
+}
