@@ -11,6 +11,7 @@ namespace Deflexion_Redux {
         public int Columns;
 
         public int pixelWidth;
+        public int frameRate;
         private int currentFrame;
         private int totalFrames;
 
@@ -41,6 +42,22 @@ namespace Deflexion_Redux {
             totalFrames = rows * columns;
             textureSize = new Vector2((texture.Width / columns) * scale.X, (texture.Height / rows) * scale.Y);
             this.pixelWidth = pixelWidth;
+        }
+
+        public AnimatedSprite(Texture2D texture, Vector2 startingPosition, float rotation, Vector2 origin, Vector2 scale, int rows, int columns, int pixelWidth, int frameRate) {
+            Texture = texture;
+            Position = startingPosition;
+            Rows = rows;
+            Columns = columns;
+            Rotation = rotation;
+            Origin = origin;
+            Scale = scale;
+
+            currentFrame = 0;
+            totalFrames = rows * columns;
+            textureSize = new Vector2((texture.Width / columns) * scale.X, (texture.Height / rows) * scale.Y);
+            this.pixelWidth = pixelWidth;
+            this.frameRate = frameRate;
         }
 
         public void Update() {

@@ -16,29 +16,38 @@ namespace Deflexion_Redux {
         float rotation = 0;
         int rotationCount = 1;
 
+        int maxBullets = 25;
+
         public AnimatedSprite playerSprite;
         private AnimatedSprite shieldSprite;
         private Texture2D bulletTexture;
 
+        private Vector2 bounds;
+
         private KeyboardState kstate_old;
+        private MouseState mstate_old;
 
         private List<Bullet> playerBullets = new List<Bullet>();
 
-        public Player(ContentManager Content) {
+        public Player(ContentManager Content, Vector2 bounds) {
+            this.bounds = bounds;
+            boundary = bounds;
             position = new Vector2(500, 500);
             mass = 1f;
             baseSpeedLimit = 500f;
             collisionBoxSize = 32f;
             player = true;
             instantaneous = false;
+            resistance = 250f;
 
-            playerSprite = new AnimatedSprite(Content.Load<Texture2D>("Sprites/deflector_SpriteSheet"), position, 0, new Vector2(2, 2), 1, 3, 16);
-            shieldSprite = new AnimatedSprite(Content.Load<Texture2D>("Sprites/shields_SpriteSheet"), playerSprite.Position, 0, new Vector2(2, 2), 1, 6, 32);
+            playerSprite = new AnimatedSprite(Content.Load<Texture2D>("Sprites/deflector_SpriteSheet"), position, 0, new Vector2(1, 1), 1, 3, 16);
+            shieldSprite = new AnimatedSprite(Content.Load<Texture2D>("Sprites/shields_SpriteSheet"), playerSprite.Position, 0, new Vector2(1, 1), 1, 6, 32);
             bulletTexture = Content.Load<Texture2D>("Sprites/shotgunBlast");
 
             playerSprite.Origin = new Vector2(8, 8);
             shieldSprite.Origin = new Vector2(16, 16);
             kstate_old = Keyboard.GetState();
+            mstate_old = Mouse.GetState();
         }
 
         public void move(GameTime gameTime, List<Sprite> tiles) {
@@ -141,14 +150,15 @@ namespace Deflexion_Redux {
         }
 
         public void physicsMove(float deltaTime, List<Sprite> tiles) {
-            var kstate = Keyboard.GetState();
+            MouseState mstate = Mouse.GetState();
+            KeyboardState kstate = Keyboard.GetState();
+
             Vector2 direction = Vector2.Zero;
 
             playerSprite.setFrame(1);
 
             if (kstate.IsKeyDown(Keys.W) && !kstate.IsKeyDown(Keys.S)) {
                 direction += new Vector2(0, -1);
-                Debug.Print("W is pressed!");
                 //addForce(new Vector2(0, -1), playerForce, false);
             } else if (kstate.IsKeyDown(Keys.S) && !kstate.IsKeyDown(Keys.W)) {
                 direction += new Vector2(0, 1);
@@ -165,41 +175,49 @@ namespace Deflexion_Redux {
 
             addForce(direction, playerForce, 0);
 
-            if (kstate.IsKeyDown(Keys.Space) && !kstate_old.IsKeyDown(Keys.Space) && direction != Vector2.Zero) {
-                addForce(direction, playerForce * 3f, 750f);
+            //if (kstate.IsKeyDown(Keys.Space) && !kstate_old.IsKeyDown(Keys.Space) && direction != Vector2.Zero) {
+            //    addForce(direction, playerForce * 3f, 750f);
+            //}
+
+            if (mstate.LeftButton == ButtonState.Pressed && mstate_old.LeftButton != ButtonState.Pressed && playerBullets.Count < maxBullets) {
+                shoot();
+            }
+
+            PhysicsUpdate(deltaTime, tiles);
+            List<int> bulletsToRemove = new List<int>();
+            for (int i = 0; i < playerBullets.Count; i++) {
+                Bullet bullet = playerBullets[i];
+                if (bullet.isActive) {
+                    bullet.PhysicsUpdate(deltaTime, tiles);
+                    bullet.update();
+                } else {
+                    bulletsToRemove.Add(i);
+                }
+            }
+
+            foreach (int index in bulletsToRemove) {
+                playerBullets.RemoveAt(index);
             }
 
             playerSprite.Position = position;
 
-            if (kstate.IsKeyDown(Keys.O) && !kstate_old.IsKeyDown(Keys.O)) {
-                shoot();
-            }
-
             kstate_old = kstate;
-
-            PhysicsUpdate(deltaTime, tiles);
-            foreach (Bullet bullet in playerBullets) {
-                bullet.PhysicsUpdate(deltaTime, tiles);
-                bullet.update();
-            }
+            mstate_old = mstate;
         }
 
         void shoot() {
-            playerBullets.Add(new Bullet(bulletTexture, new Vector2(position.X - playerSprite.pixelWidth, position.Y - playerSprite.pixelWidth), shieldSprite.Rotation));
-            addForce(new Vector2(MathF.Cos(shieldSprite.Rotation + MathF.PI / 2), MathF.Sin(shieldSprite.Rotation + MathF.PI / 2)), 750f, 100f);
+            playerBullets.Add(new Bullet(bulletTexture, new Vector2(position.X - playerSprite.pixelWidth, position.Y - playerSprite.pixelWidth), shieldSprite.Rotation, bounds));
+            addForce(new Vector2(MathF.Cos(shieldSprite.Rotation + MathF.PI / 2), MathF.Sin(shieldSprite.Rotation + MathF.PI / 2)), 25000f, 1150f);
         }
 
-        public void shieldPowers() {
+        public void shieldPowers(float x, float y) {
             MouseState mState = Mouse.GetState();
             //shieldSprite.Position = playerSprite.Position + new Vector2(playerSprite.textureSize.X / 2, playerSprite.textureSize.Y / 2);
             shieldSprite.Position = playerSprite.Position;
-            float x = shieldSprite.Position.X - mState.X;
-            float y = shieldSprite.Position.Y - mState.Y;
+            //float x = shieldSprite.Position.X - mState.X;
+            //float y = shieldSprite.Position.Y - mState.Y;
             shieldSprite.Rotation = -(float)Math.Atan2(x, y);
 
-            //if (kstate.IsKeyDown(Keys.O) && !kstate_old.IsKeyDown(Keys.O)) {
-            //    shoot();
-            //}
         }
 
         //public Vector2 collision(Vector2 currentPosition, Vector2 newPosition, List<Sprite> tiles) {
