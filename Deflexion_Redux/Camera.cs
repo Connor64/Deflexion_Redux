@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Uses David Amador's method of XNA 2D independent resolution rendering -> http://www.david-amador.com/2010/03/xna-2d-independent-resolution-rendering/
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
@@ -21,6 +22,9 @@ namespace Deflexion_Redux {
         public Vector2 position;
         public float zoom;
         public GraphicsDeviceManager device;
+
+        public int virtualViewportX;
+        public int virtualViewportY;
 
         private int virtualWidth;
         private int virtualHeight;
@@ -131,6 +135,8 @@ namespace Deflexion_Redux {
             Viewport viewport = new Viewport();
             viewport.X = (device.PreferredBackBufferWidth / 2) - (width / 2);
             viewport.Y = (device.PreferredBackBufferHeight / 2) - (height / 2);
+            virtualViewportX = viewport.X;
+            virtualViewportY = viewport.Y;
             viewport.Width = width;
             viewport.Height = height;
 

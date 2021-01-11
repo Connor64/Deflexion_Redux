@@ -60,7 +60,7 @@ namespace Deflexion_Redux {
             //cam.move(Vector2.Normalize(player.position));
 
             player.physicsMove((float)gameTime.ElapsedGameTime.TotalSeconds, tiles.tileSprites);
-            player.shieldPowers(player.position.X - Mouse.GetState().X + cam.position.X, player.position.Y - Mouse.GetState().Y + cam.position.Y);
+            player.shieldPowers();
 
             //kState_OLD = Keyboard.GetState();
             //mState_OLD = Mouse.GetState();

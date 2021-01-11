@@ -11,7 +11,7 @@ namespace Deflexion_Redux {
     class Player : Physics {
 
         private float playerSpeed = 400f;
-        private float playerForce = 2000f;
+        private float playerForce = 1500f;
         private float turn = 10f;
         float rotation = 0;
         int rotationCount = 1;
@@ -23,6 +23,7 @@ namespace Deflexion_Redux {
         private Texture2D bulletTexture;
 
         private Vector2 bounds;
+        private Camera cam;
 
         private KeyboardState kstate_old;
         private MouseState mstate_old;
@@ -30,6 +31,7 @@ namespace Deflexion_Redux {
         private List<Bullet> playerBullets = new List<Bullet>();
 
         public Player(ContentManager Content, Vector2 bounds) {
+            cam = Camera.Instance;
             this.bounds = bounds;
             boundary = bounds;
             position = new Vector2(500, 500);
@@ -38,7 +40,7 @@ namespace Deflexion_Redux {
             collisionBoxSize = 32f;
             player = true;
             instantaneous = false;
-            resistance = 250f;
+            resistance = 1000f;
 
             playerSprite = new AnimatedSprite(Content.Load<Texture2D>("Sprites/deflector_SpriteSheet"), position, 0, new Vector2(1, 1), 1, 3, 16);
             shieldSprite = new AnimatedSprite(Content.Load<Texture2D>("Sprites/shields_SpriteSheet"), playerSprite.Position, 0, new Vector2(1, 1), 1, 6, 32);
@@ -207,15 +209,19 @@ namespace Deflexion_Redux {
 
         void shoot() {
             playerBullets.Add(new Bullet(bulletTexture, new Vector2(position.X - playerSprite.pixelWidth, position.Y - playerSprite.pixelWidth), shieldSprite.Rotation, bounds));
-            addForce(new Vector2(MathF.Cos(shieldSprite.Rotation + MathF.PI / 2), MathF.Sin(shieldSprite.Rotation + MathF.PI / 2)), 25000f, 1150f);
+            addForce(new Vector2(MathF.Cos(shieldSprite.Rotation + MathF.PI / 2), MathF.Sin(shieldSprite.Rotation + MathF.PI / 2)), playerForce * 15, 1150f);
         }
 
-        public void shieldPowers(float x, float y) {
+        public void shieldPowers() {
             MouseState mState = Mouse.GetState();
             //shieldSprite.Position = playerSprite.Position + new Vector2(playerSprite.textureSize.X / 2, playerSprite.textureSize.Y / 2);
             shieldSprite.Position = playerSprite.Position;
-            //float x = shieldSprite.Position.X - mState.X;
-            //float y = shieldSprite.Position.Y - mState.Y;
+            Vector2 mousePosition = new Vector2(mState.X, mState.Y);
+            Vector2 virtualViewPort = new Vector2(cam.virtualViewportX, cam.virtualViewportY);
+            mousePosition = Vector2.Transform(mousePosition - virtualViewPort, Matrix.Invert(cam.getTransformationMatrix()));
+            float x = shieldSprite.Position.X - mousePosition.X;
+            float y = shieldSprite.Position.Y - mousePosition.Y;
+
             shieldSprite.Rotation = -(float)Math.Atan2(x, y);
 
         }

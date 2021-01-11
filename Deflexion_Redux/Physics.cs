@@ -12,12 +12,12 @@ namespace Deflexion_Redux {
         public Vector2 acceleration;
         private Vector2 force = Vector2.Zero;
         //private float torque;
-        private float velocityThreshold = 8f;        // If the object's velocity is within this threshold +/-, it is set to 0
+        private float velocityThreshold = 15f;        // If the object's velocity is within this threshold +/-, it is set to 0
         public Vector2 velocity = Vector2.Zero;
 
         // Values below are defaults and are meant to be changed in the constructor of whatever classes that inherit from this one.
         public float mass = 1f;
-        public float collisionBoxSize = 32f;        // Size of the object's collider in pixels (unscaled)
+        public float collisionBoxSize = 16f;        // Size of the object's collider in pixels (unscaled)
         public Vector2 position = Vector2.Zero;
         public bool instantaneous = false;          // If true, object will stop immediately if no forces are applied
         public Vector2 boundary = Vector2.Zero;     // The object's physical boundary (matching the screen). If left at default value then it will be ignored
@@ -25,13 +25,14 @@ namespace Deflexion_Redux {
         public float resistance = 400f;             // The "air" resistance that the object faces
         public float baseSpeedLimit = 500f;         // Base speed limit for the speedLimit value to return to when boosting (does not ever change)
         public float speedLimit = 500f;             // Limits the object's speed (increased when launch occurs)
-        public float boostFalloffSpeed = 1000f;     // The speed at which the launch boost speed limit increase shrinks
+        public float boostFalloffSpeed = 5000f;     // The speed at which the launch boost speed limit increase shrinks
 
         public bool player = false;                 // If true, the object will interact with tiles (probably will be changed in the future)
 
         public void addForce(Vector2 direction, float strength, float launchLimit) {
             force += direction * strength;
             if (launchLimit > 0) {
+                //velocityLimit = Vector2.Normalize(new Vector2(MathF.Abs(force.X), MathF.Abs(force.Y))) * launchLimit;
                 speedLimit = launchLimit;
             }
         }
