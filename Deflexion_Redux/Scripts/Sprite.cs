@@ -10,7 +10,7 @@ namespace Deflexion_Redux {
         public Texture2D Texture;
         public Vector2 Position;
         public float Rotation;
-        public Vector2 Origin = Vector2.Zero;
+        public Vector2 Origin;
         public Vector2 Scale;
         public float Layer;
 
@@ -20,6 +20,7 @@ namespace Deflexion_Redux {
             Texture = texture;
             Position = position;
             Rotation = rotation;
+            Origin = Vector2.Zero;
             Scale = scale;
             Layer = layer;
 
@@ -40,7 +41,7 @@ namespace Deflexion_Redux {
         protected Sprite() {}
 
         public void draw(SpriteBatch spriteBatch) {
-            spriteBatch.Draw(Texture, Position, new Rectangle(0, 0, Texture.Width, Texture.Height), Color.White, Rotation, new Vector2(0, 0), Scale, SpriteEffects.None, Layer);
+            spriteBatch.Draw(Texture, Position, new Rectangle(0, 0, Texture.Width, Texture.Height), Color.White, Rotation, Origin, Scale, SpriteEffects.None, Layer);
         }
     }
 }

@@ -11,7 +11,8 @@ namespace Deflexion_Redux {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         private Player player;
-        private TileManager tiles;
+        private TileManager tileManager;
+        private BackgroundManager backgroundManager;
         private Camera cam;
 
         public KeyboardState kState;
@@ -28,13 +29,12 @@ namespace Deflexion_Redux {
 
         protected override void Initialize() {
             GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-            _graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width;
-            _graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height;
 
             cam = Camera.Instance;
             cam.zoom = 1;
             cam.Initialize(ref _graphics);
-            cam.SetVirtualResolution(768, 432);
+            cam.SetVirtualResolution(960, 540);
+            //cam.SetVirtualResolution(16, 9);
             cam.SetResolution(GraphicsDevice.DisplayMode.Width, GraphicsDevice.DisplayMode.Height, true);
 
             _graphics.ToggleFullScreen();
@@ -47,7 +47,8 @@ namespace Deflexion_Redux {
 
         protected override void LoadContent() {
             player = new Player(Content, new Vector2(GraphicsDevice.DisplayMode.Width, GraphicsDevice.DisplayMode.Height));
-            tiles = new TileManager(Content);
+            tileManager = new TileManager(Content);
+            backgroundManager = new BackgroundManager(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
         }
 
@@ -59,8 +60,9 @@ namespace Deflexion_Redux {
             //cam.position = player.position;
             //cam.move(Vector2.Normalize(player.position));
 
-            player.physicsMove((float)gameTime.ElapsedGameTime.TotalSeconds, tiles.tileSprites);
-            player.shieldPowers();
+            player.physicsMove((float)gameTime.ElapsedGameTime.TotalSeconds, tileManager.tileSprites);
+            player.mouseFollow();
+            cam.move(player.previousPosition - player.position);
 
             //kState_OLD = Keyboard.GetState();
             //mState_OLD = Mouse.GetState();
@@ -73,13 +75,13 @@ namespace Deflexion_Redux {
             //GraphicsDevice.Clear(Color.CornflowerBlue); // background color
 
             cam.BeginDraw();
-
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied,
+            _spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.NonPremultiplied,
                            SamplerState.PointClamp, null, null, null, cam.getMatrix() * cam.getTransformationMatrix());
 
             //_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
             player.Draw(_spriteBatch);
-            tiles.Draw(_spriteBatch);
+            tileManager.Draw(_spriteBatch);
+            backgroundManager.draw(_spriteBatch);
             _spriteBatch.End();
             base.Draw(gameTime);
         }

@@ -18,8 +18,10 @@ namespace Deflexion_Redux {
 
         int maxBullets = 25;
 
-        public AnimatedSprite playerSprite;
-        private AnimatedSprite shieldSprite;
+        public Sprite playerSprite;
+        //private AnimatedSprite shieldSprite;
+        private Sprite shieldSprite;
+        private Sprite gunSprite;
         private Texture2D bulletTexture;
 
         private Vector2 bounds;
@@ -34,7 +36,7 @@ namespace Deflexion_Redux {
             cam = Camera.Instance;
             this.bounds = bounds;
             boundary = bounds;
-            position = new Vector2(500, 500);
+            position = new Vector2(1920/4, 1080/4);
             mass = 1f;
             baseSpeedLimit = 500f;
             collisionBoxSize = 32f;
@@ -42,12 +44,15 @@ namespace Deflexion_Redux {
             instantaneous = false;
             resistance = 1000f;
 
-            playerSprite = new AnimatedSprite(Content.Load<Texture2D>("Sprites/deflector_SpriteSheet"), position, 0, new Vector2(1, 1), 1, 3, 16);
-            shieldSprite = new AnimatedSprite(Content.Load<Texture2D>("Sprites/shields_SpriteSheet"), playerSprite.Position, 0, new Vector2(1, 1), 1, 6, 32);
+            //playerSprite = new AnimatedSprite(Content.Load<Texture2D>("Sprites/deflector_SpriteSheet"), position, 0, Vector2.One, 1, 3, 16);
+            playerSprite = new Sprite(Content.Load<Texture2D>("Sprites/test_ship_bottom"), position, 0, Vector2.One, 0.5f, new Vector2(8, 8));
+            //shieldSprite = new AnimatedSprite(Content.Load<Texture2D>("Sprites/shields_SpriteSheet"), playerSprite.Position, 0, Vector2.One, 1, 6, 32);
+            shieldSprite = new Sprite(Content.Load<Texture2D>("Sprites/test_shield"), playerSprite.Position, 0, Vector2.One, 0.5f, new Vector2(32, 32));
+            gunSprite = new Sprite(Content.Load<Texture2D>("Sprites/test_ship_top"), position, 0, Vector2.One, 0.45f, new Vector2(16, 17));
+            shieldSprite.Layer = 0.5f;
+            //shieldSprite.Origin = new Vector2(16, 16);
             bulletTexture = Content.Load<Texture2D>("Sprites/shotgunBlast");
 
-            playerSprite.Origin = new Vector2(8, 8);
-            shieldSprite.Origin = new Vector2(16, 16);
             kstate_old = Keyboard.GetState();
             mstate_old = Mouse.GetState();
         }
@@ -89,7 +94,7 @@ namespace Deflexion_Redux {
             if (kstate.IsKeyDown(Keys.A) && !kstate.IsKeyDown(Keys.D)) {
                 //newPosition.X -= movement;
                 //playerSprite.Position = collision(playerSprite.Position, newPosition, tiles);
-                playerSprite.setFrame(0);
+                //playerSprite.setFrame(0);
                 playerSprite.Rotation -= turn * (float)gameTime.ElapsedGameTime.TotalSeconds;
                 if (playerSprite.Rotation < 0) {
                     playerSprite.Rotation += 2 * MathF.PI;
@@ -97,13 +102,13 @@ namespace Deflexion_Redux {
             } else if (kstate.IsKeyDown(Keys.D) && !kstate.IsKeyDown(Keys.A)) {
                 //newPosition.X += movement;
                 //playerSprite.Position = collision(playerSprite.Position, newPosition, tiles);
-                playerSprite.setFrame(2);
+                //playerSprite.setFrame(2);
                 playerSprite.Rotation += turn * (float)gameTime.ElapsedGameTime.TotalSeconds;
                 if (playerSprite.Rotation >= 2 * MathF.PI) {
                     playerSprite.Rotation -= 2 * MathF.PI;
                 }
             } else {
-                playerSprite.setFrame(1);
+                //playerSprite.setFrame(1);
             }
         }
 
@@ -157,7 +162,7 @@ namespace Deflexion_Redux {
 
             Vector2 direction = Vector2.Zero;
 
-            playerSprite.setFrame(1);
+            //playerSprite.setFrame(1);
 
             if (kstate.IsKeyDown(Keys.W) && !kstate.IsKeyDown(Keys.S)) {
                 direction += new Vector2(0, -1);
@@ -186,43 +191,48 @@ namespace Deflexion_Redux {
             }
 
             PhysicsUpdate(deltaTime, tiles);
-            List<int> bulletsToRemove = new List<int>();
+            List<Bullet> bulletsToRemove = playerBullets;
             for (int i = 0; i < playerBullets.Count; i++) {
                 Bullet bullet = playerBullets[i];
                 if (bullet.isActive) {
                     bullet.PhysicsUpdate(deltaTime, tiles);
                     bullet.update();
                 } else {
-                    bulletsToRemove.Add(i);
+                    bulletsToRemove.RemoveAt(i);
+                    //bulletsToRemove.Add(i);
                 }
             }
+            playerBullets = bulletsToRemove;
 
-            foreach (int index in bulletsToRemove) {
-                playerBullets.RemoveAt(index);
-            }
+            //foreach (int index in bulletsToRemove) {
+            //    playerBullets.RemoveAt(index);
+            //}
 
             playerSprite.Position = position;
+            gunSprite.Position = position;
 
             kstate_old = kstate;
             mstate_old = mstate;
         }
 
         void shoot() {
-            playerBullets.Add(new Bullet(bulletTexture, new Vector2(position.X - playerSprite.pixelWidth, position.Y - playerSprite.pixelWidth), shieldSprite.Rotation, bounds));
-            addForce(new Vector2(MathF.Cos(shieldSprite.Rotation + MathF.PI / 2), MathF.Sin(shieldSprite.Rotation + MathF.PI / 2)), playerForce * 15, 1150f);
+            playerBullets.Add(new Bullet(bulletTexture, new Vector2(position.X - playerSprite.textureSize.X, position.Y - playerSprite.textureSize.Y), gunSprite.Rotation, bounds));
+            addForce(new Vector2(MathF.Cos(gunSprite.Rotation + MathF.PI / 2), MathF.Sin(gunSprite.Rotation + MathF.PI / 2)), playerForce * 15, 1150f);
         }
 
-        public void shieldPowers() {
+        public void mouseFollow() {
             MouseState mState = Mouse.GetState();
             //shieldSprite.Position = playerSprite.Position + new Vector2(playerSprite.textureSize.X / 2, playerSprite.textureSize.Y / 2);
             shieldSprite.Position = playerSprite.Position;
             Vector2 mousePosition = new Vector2(mState.X, mState.Y);
             Vector2 virtualViewPort = new Vector2(cam.virtualViewportX, cam.virtualViewportY);
             mousePosition = Vector2.Transform(mousePosition - virtualViewPort, Matrix.Invert(cam.getTransformationMatrix()));
-            float x = shieldSprite.Position.X - mousePosition.X;
-            float y = shieldSprite.Position.Y - mousePosition.Y;
+            float x = shieldSprite.Position.X - mousePosition.X + cam.position.X;
+            float y = shieldSprite.Position.Y - mousePosition.Y + cam.position.Y;
 
             shieldSprite.Rotation = -(float)Math.Atan2(x, y);
+
+            gunSprite.Rotation = shieldSprite.Rotation + MathF.PI;
 
         }
 
@@ -241,8 +251,9 @@ namespace Deflexion_Redux {
         //}
 
         public void Draw(SpriteBatch spriteBatch) {
-            playerSprite.Draw(spriteBatch);
-            shieldSprite.Draw(spriteBatch);
+            playerSprite.draw(spriteBatch);
+            gunSprite.draw(spriteBatch);
+            shieldSprite.draw(spriteBatch);
             foreach (Bullet bullet in playerBullets) {
                 bullet.draw(spriteBatch);
             }

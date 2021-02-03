@@ -71,7 +71,7 @@ namespace Deflexion_Redux {
             currentFrame = frame;
         }
 
-        public void Draw(SpriteBatch spriteBatch) {
+        public void animDraw(SpriteBatch spriteBatch) {
             int row = currentFrame / Columns;
             int column = currentFrame % Columns;
 

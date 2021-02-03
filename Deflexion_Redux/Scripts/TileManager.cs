@@ -20,7 +20,7 @@ namespace Deflexion_Redux {
             for (int x = 0; x < levelData.GetLength(0); x++) {
                 for (int y = 0; y < levelData.GetLength(1); y++) {
                     if (levelData[x, y] == 1) {
-                        tileSprites.Add(new Sprite(tileTexture, new Vector2(x * tileTexture.Width, y * tileTexture.Height), 0f, new Vector2(1, 1), 0f));
+                        tileSprites.Add(new Sprite(tileTexture, new Vector2(x * tileTexture.Width, y * tileTexture.Height), 0f, new Vector2(1, 1), 0.9f));
                     }
                 }
             }

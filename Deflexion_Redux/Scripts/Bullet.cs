@@ -21,7 +21,7 @@ namespace Deflexion_Redux {
             player = false;
             position = startingPosition;
             resistance = 0f;
-            bulletSprite = new Sprite(bulletTexture, position, 0, new Vector2(1, 1), 0);
+            bulletSprite = new Sprite(bulletTexture, position, 0, new Vector2(1, 1), 1);
             Vector2 direction = new Vector2(MathF.Cos(rotation - MathF.PI / 2), MathF.Sin(rotation - MathF.PI / 2));
             addForce(direction, 750f, 0);
         }

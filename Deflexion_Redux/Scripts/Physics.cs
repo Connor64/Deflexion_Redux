@@ -17,8 +17,9 @@ namespace Deflexion_Redux {
 
         // Values below are defaults and are meant to be changed in the constructor of whatever classes that inherit from this one.
         public float mass = 1f;
-        public float collisionBoxSize = 16f;        // Size of the object's collider in pixels (unscaled)
+        public float collisionBoxSize = 8f;        // Size of the object's collider in pixels (unscaled)
         public Vector2 position = Vector2.Zero;
+        public Vector2 previousPosition = Vector2.Zero;
         public bool instantaneous = false;          // If true, object will stop immediately if no forces are applied
         public Vector2 boundary = Vector2.Zero;     // The object's physical boundary (matching the screen). If left at default value then it will be ignored
 
@@ -42,6 +43,8 @@ namespace Deflexion_Redux {
         //}
 
         public void PhysicsUpdate(float deltaTime, List<Sprite> tiles) {
+            previousPosition = position;
+
             acceleration = force / mass;
 
             velocity += acceleration * deltaTime; // v = vi + at
@@ -97,10 +100,10 @@ namespace Deflexion_Redux {
 
             foreach (Sprite tile in tiles) {
 
-                if ((nextPosition_X.Y < tile.Position.Y + tile.Texture.Height * 2 &&
+                if (nextPosition_X.Y < tile.Position.Y + tile.Texture.Height * 2 &&
                     nextPosition_X.Y + collisionBoxSize > tile.Position.Y &&
                     nextPosition_X.X < tile.Position.X + tile.Texture.Width * 2 &&
-                    nextPosition_X.X + collisionBoxSize > tile.Position.X)) {
+                    nextPosition_X.X + collisionBoxSize > tile.Position.X) {
                     nextPosition.X = position.X;
                     velocity.X = 0;
                 }

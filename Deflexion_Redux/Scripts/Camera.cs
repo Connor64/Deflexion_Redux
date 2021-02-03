@@ -28,8 +28,8 @@ namespace Deflexion_Redux {
 
         private int virtualWidth;
         private int virtualHeight;
-        private int _Width;
-        private int _Height;
+        public int _Width;
+        public int _Height;
 
         private Matrix scaleMatrix;
         private bool dirtyMatrix = true;
@@ -47,8 +47,8 @@ namespace Deflexion_Redux {
             ApplyResolutionChanges();
         }
 
-        public void move(Vector2 direction) {
-            position += direction; // should add interpolation (?)
+        public void move(Vector2 deltaTranslate) {
+            position += deltaTranslate; // should add interpolation (?)
         }
 
         public Matrix getMatrix() {
@@ -126,7 +126,7 @@ namespace Deflexion_Redux {
             int height = (int)(width / targetAspectRatio + 0.5f); // I'm not sure why there's a 0.5f
             bool changed = false;
 
-            if (height > device.PreferredBackBufferHeight) {
+            if (height != device.PreferredBackBufferHeight) {
                 height = device.PreferredBackBufferHeight; // Pillarbox
                 width = (int)(height * targetAspectRatio + 0.5f);
                 changed = true;
