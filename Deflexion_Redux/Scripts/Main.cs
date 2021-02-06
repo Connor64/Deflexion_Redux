@@ -57,12 +57,12 @@ namespace Deflexion_Redux {
                 Exit();
             }
 
-            //cam.position = player.position;
-            //cam.move(Vector2.Normalize(player.position));
 
             player.physicsMove((float)gameTime.ElapsedGameTime.TotalSeconds, tileManager.tileSprites);
             player.mouseFollow();
             cam.move(player.previousPosition - player.position);
+
+            backgroundManager.loop(player.position);
 
             //kState_OLD = Keyboard.GetState();
             //mState_OLD = Mouse.GetState();

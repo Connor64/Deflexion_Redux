@@ -36,7 +36,7 @@ namespace Deflexion_Redux {
             cam = Camera.Instance;
             this.bounds = bounds;
             boundary = bounds;
-            position = new Vector2(1920/4, 1080/4);
+            position = new Vector2(cam._Width/4, cam._Height/4);
             mass = 1f;
             baseSpeedLimit = 500f;
             collisionBoxSize = 32f;
