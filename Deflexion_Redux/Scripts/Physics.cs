@@ -9,10 +9,10 @@ namespace Deflexion_Redux {
     public enum ForceMode { Normal, Impulsive };
     class Physics {
 
-        public Vector2 acceleration;
         private Vector2 force = Vector2.Zero;
         //private float torque;
         private float velocityThreshold = 15f;        // If the object's velocity is within this threshold +/-, it is set to 0
+        public Vector2 acceleration;
         public Vector2 velocity = Vector2.Zero;
 
         // Values below are defaults and are meant to be changed in the constructor of whatever classes that inherit from this one.
@@ -28,7 +28,7 @@ namespace Deflexion_Redux {
         public float speedLimit = 500f;             // Limits the object's speed (increased when launch occurs)
         public float boostFalloffSpeed = 5000f;     // The speed at which the launch boost speed limit increase shrinks
 
-        public bool player = false;                 // If true, the object will interact with tiles (probably will be changed in the future)
+        public List<Sprite> tiles = null;
 
         public void addForce(Vector2 direction, float strength, float launchLimit) {
             force += direction * strength;
@@ -38,11 +38,8 @@ namespace Deflexion_Redux {
             }
         }
 
-        //public void addTorque(float torque) {
 
-        //}
-
-        public void PhysicsUpdate(float deltaTime, List<Sprite> tiles) {
+        public void PhysicsUpdate(float deltaTime) {
             previousPosition = position;
 
             acceleration = force / mass;
@@ -53,8 +50,8 @@ namespace Deflexion_Redux {
                 velocity = Vector2.Normalize(velocity) * speedLimit;
             }
 
-            if (player) {
-                position = playerCollision(position + velocity * deltaTime, tiles);
+            if (tiles != null) {
+                position = collision(position + velocity * deltaTime, tiles);
             } else {
                 position += velocity * deltaTime;
             }
@@ -92,7 +89,7 @@ namespace Deflexion_Redux {
             acceleration = Vector2.Zero;
         }
 
-        Vector2 playerCollision(Vector2 newPosition, List<Sprite> tiles) {
+        Vector2 collision(Vector2 newPosition, List<Sprite> tiles) {
             Vector2 nextPosition = newPosition;
 
             Vector2 nextPosition_X = new Vector2(newPosition.X, position.Y);
@@ -115,17 +112,6 @@ namespace Deflexion_Redux {
                     nextPosition.Y = position.Y;
                     velocity.Y = 0;
                 }
-
-                //if (boundary != Vector2.Zero) {
-                //    if (nextPosition.X > boundary.X || nextPosition.X < 0) {
-                //        nextPosition.X = position.X;
-                //        velocity.X = 0;
-                //    }
-                //    if (nextPosition.Y > boundary.Y || nextPosition.Y < 0) {
-                //        nextPosition.Y = position.Y;
-                //        velocity.Y = 0;
-                //    }
-                //}
             }
             return nextPosition;
         }

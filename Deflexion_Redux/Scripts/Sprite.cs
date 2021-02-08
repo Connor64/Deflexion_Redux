@@ -5,7 +5,17 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 
 namespace Deflexion_Redux {
+
     class Sprite {
+
+        public static Dictionary<string, float> Layers = new Dictionary<string, float>() {
+            {"Background", 1},
+            {"Foreground", 0},
+            {"Player", 0.5f},
+            {"Enemies", 0.75f},
+            {"Bullets", 0.9f},
+            {"Tiles", 0.95f}
+        };
 
         public Texture2D Texture;
         public Vector2 Position;

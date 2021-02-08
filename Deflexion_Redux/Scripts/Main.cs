@@ -46,8 +46,8 @@ namespace Deflexion_Redux {
         }
 
         protected override void LoadContent() {
-            player = new Player(Content, new Vector2(GraphicsDevice.DisplayMode.Width, GraphicsDevice.DisplayMode.Height));
             tileManager = new TileManager(Content);
+            player = new Player(Content, new Vector2(GraphicsDevice.DisplayMode.Width, GraphicsDevice.DisplayMode.Height), tileManager.tileSprites);
             backgroundManager = new BackgroundManager(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
         }
@@ -58,7 +58,7 @@ namespace Deflexion_Redux {
             }
 
 
-            player.physicsMove((float)gameTime.ElapsedGameTime.TotalSeconds, tileManager.tileSprites);
+            player.update((float)gameTime.ElapsedGameTime.TotalSeconds);
             player.mouseFollow();
             cam.move(player.previousPosition - player.position);
 
