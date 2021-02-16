@@ -11,9 +11,9 @@ namespace Deflexion_Redux {
         private SpriteBatch _spriteBatch;
         private Player player;
         private TileManager tileManager;
+        private EnemyManager enemyManager;
         private Background background;
         private Camera cam;
-        private Turret testTurret;
 
         public KeyboardState kState;
         public KeyboardState kState_OLD;
@@ -32,13 +32,12 @@ namespace Deflexion_Redux {
             GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
 
             cam = Camera.Instance;
-            cam.zoom = 1;
             cam.Initialize(ref _graphics);
             cam.SetVirtualResolution(960, 540);
-            //cam.SetVirtualResolution(16, 9);
             cam.SetResolution(GraphicsDevice.DisplayMode.Width, GraphicsDevice.DisplayMode.Height, true);
 
-            _graphics.ToggleFullScreen();
+            enemyManager = EnemyManager.Instance;
+
             _graphics.ApplyChanges();
             kState = Keyboard.GetState();
             kState_OLD = kState;
@@ -47,11 +46,15 @@ namespace Deflexion_Redux {
         }
 
         protected override void LoadContent() {
+            enemyManager.Initialize(Content);
+            enemyManager.enemies.Add(new Turret(new Vector2(1920 / 3, 1080 / 3)));
             tileManager = new TileManager(Content);
-            testTurret = new Turret(Content, new Vector2(1920 / 3, 1080 / 3));
-            player = new Player(Content, tileManager.tileSprites, testTurret);
+            player = new Player(Content, tileManager.tileSprites);
             background = new Background(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            cam.move(new Vector2(1920 / 4, 1080 / 4) - player.position);
+            //cam.position = player.position - new Vector2(cam._Width/2, -cam._Height/2);
         }
 
         protected override void Update(GameTime gameTime) {
@@ -70,8 +73,8 @@ namespace Deflexion_Redux {
                 background.loop(player.position);
             }
 
-            testTurret.update(player.position, deltaTime);
-            bulletCleanup(testTurret.bullets, out testTurret.bullets);
+            enemyManager.Update(player.position, deltaTime);
+            bulletCleanup(enemyManager.enemyBullets, out enemyManager.enemyBullets);
 
             //kState_OLD = Keyboard.GetState();
             //mState_OLD = Mouse.GetState();
@@ -90,7 +93,8 @@ namespace Deflexion_Redux {
             player.Draw(_spriteBatch);
             tileManager.Draw(_spriteBatch);
             background.draw(_spriteBatch);
-            testTurret.Draw(_spriteBatch);
+            //testTurret.Draw(_spriteBatch);
+            enemyManager.Draw(_spriteBatch);
             _spriteBatch.End();
             base.Draw(gameTime);
         }
@@ -108,6 +112,5 @@ namespace Deflexion_Redux {
             }
             outBullets = bulletsToRemove;
         }
-
     }
 }

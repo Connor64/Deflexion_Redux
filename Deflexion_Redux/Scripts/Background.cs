@@ -11,6 +11,7 @@ namespace Deflexion_Redux {
         public Sprite[] backgrounds = new Sprite[4];
         private Vector2 textureSize;
         private Camera cam;
+        private Sprite currentSprite;
 
         private Vector2[][] positions;
         
@@ -20,10 +21,11 @@ namespace Deflexion_Redux {
             positions = generatePositions();
 
             for (int i = 0; i < backgrounds.Length; i++) {
-                backgrounds[i] = new Sprite(backgroundTexture, new Vector2(textureSize.X * i, 0), 0, Vector2.One, 1);
+                backgrounds[i] = new Sprite(backgroundTexture, new Vector2((textureSize.X * i) - textureSize.X, 0), 0, Vector2.One, 1);
             }
 
             cam = Camera.Instance;
+            currentSprite = backgrounds[0];
         }
 
         private Vector2[][] generatePositions() {
@@ -53,27 +55,27 @@ namespace Deflexion_Redux {
         }
 
         public void loop(Vector2 playerPosition) {
-            Sprite sprite = currentSprite(playerPosition);
-            if (sprite != null) {
+            currentSprite = onSprite(playerPosition);
+            if (currentSprite != null) {
                 int positionVal = 0;
-                if (playerPosition.X > sprite.textureSize.X / 2 + sprite.Position.X) {
+                if (playerPosition.X > currentSprite.textureSize.X / 2 + currentSprite.Position.X) {
                     positionVal++;
                 }
-                if (playerPosition.Y < sprite.textureSize.Y / 2 + sprite.Position.Y) {
+                if (playerPosition.Y < currentSprite.textureSize.Y / 2 + currentSprite.Position.Y) {
                     positionVal += 2;
                 }
 
                 int index = 0;
                 for (int i = 0; i < backgrounds.Length; i++) {
-                    if (backgrounds[i] != sprite) {
-                        backgrounds[i].Position = sprite.Position + positions[positionVal][index];
+                    if (backgrounds[i] != currentSprite) {
+                        backgrounds[i].Position = currentSprite.Position + positions[positionVal][index];
                         index++;
                     }
                 }
             }
         }
 
-        public Sprite currentSprite(Vector2 playerPosition) {
+        public Sprite onSprite(Vector2 playerPosition) {
             Sprite sprite = null;
             foreach (Sprite backSprite in backgrounds) {
                 if (playerPosition.X > backSprite.Position.X &&

@@ -11,35 +11,33 @@ namespace Deflexion_Redux {
 
         private float playerForce = 1500f;
 
-        int maxBullets = 25;
-
         public Sprite playerSprite;
         private Sprite shieldSprite;
         private Sprite gunSprite;
         private Texture2D bulletTexture;
 
         private Camera cam;
+        private EnemyManager enemyManager;
 
         private KeyboardState kstate_old;
         private MouseState mstate_old;
 
         public bool isAlive = true;
 
-        private Turret test_turret;
-
         public List<Bullet> playerBullets = new List<Bullet>();
+        int maxBullets = 25;
 
-        public Player(ContentManager Content, List<Sprite> tiles, Turret turret) {
+        public Player(ContentManager Content, List<Sprite> tiles) {
             cam = Camera.Instance;
-            position = new Vector2(cam._Width / 4, cam._Height / 4);
+            enemyManager = EnemyManager.Instance;
+
+            position = new Vector2(0.5f, 0.5f);
             mass = 1f;
-            baseSpeedLimit = 1000f;
+            baseSpeedLimit = 500f;
             collisionBoxSize = 32f;
             this.tiles = tiles;
             instantaneous = false;
             resistance = 1000f;
-
-            test_turret = turret;
 
             collisionBoxSize = 4f;
 
@@ -67,7 +65,7 @@ namespace Deflexion_Redux {
 
             PhysicsUpdate(deltaTime);
             
-            if (collisionCheck(position, test_turret.bullets, out Bullet bullet)) {
+            if (collisionCheck(position, enemyManager.enemyBullets, out Bullet bullet)) {
                 isAlive = false;
                 bullet.isActive = false;
             }
@@ -114,13 +112,14 @@ namespace Deflexion_Redux {
             shieldSprite.Rotation = -(float)Math.Atan2(x, y);
 
             gunSprite.Rotation = shieldSprite.Rotation + MathF.PI;
-
         }
 
         public void Draw(SpriteBatch spriteBatch) {
-            playerSprite.draw(spriteBatch);
-            gunSprite.draw(spriteBatch);
-            shieldSprite.draw(spriteBatch);
+            if (isAlive) {
+                playerSprite.draw(spriteBatch);
+                gunSprite.draw(spriteBatch);
+                shieldSprite.draw(spriteBatch);
+            }
             foreach (Bullet bullet in playerBullets) {
                 bullet.draw(spriteBatch);
             }

@@ -12,6 +12,7 @@ using Microsoft.Xna.Framework.Content;
 namespace Deflexion_Redux {
     class TileManager {
         public List<Sprite> tileSprites = new List<Sprite>();
+        private Camera cam = Camera.Instance;
 
         public TileManager(ContentManager content) {
             int[,] levelData = readLevel((Bitmap)Bitmap.FromFile(@"Content\poopyLevel.bmp")); // make sure file is set to always copy to output in build actions in its properties in the solution explorer
@@ -20,7 +21,7 @@ namespace Deflexion_Redux {
                 for (int y = 0; y < levelData.GetLength(1); y++) {
                     switch(levelData[x, y]) {
                         case 1:
-                            tileSprites.Add(new Sprite(tileTexture, new Vector2(x * tileTexture.Width, y * tileTexture.Height), 0f, new Vector2(1, 1), Sprite.Layers["Tiles"]));
+                            tileSprites.Add(new Sprite(tileTexture, new Vector2((x * tileTexture.Width) - (levelData.GetLength(0) * 8), (y * tileTexture.Height) - (levelData.GetLength(1) * 8)), 0f, new Vector2(1, 1), Sprite.Layers["Tiles"]));
                             break;
                     }
                 }

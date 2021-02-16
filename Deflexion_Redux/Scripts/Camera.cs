@@ -19,8 +19,8 @@ namespace Deflexion_Redux {
         }
 
         public bool isFullscreen;
-        public Vector2 position;
-        public float zoom;
+        public Vector2 position = Vector2.Zero;
+        public float zoom = 1;
         public GraphicsDeviceManager device;
 
         public int virtualViewportX;
@@ -33,11 +33,6 @@ namespace Deflexion_Redux {
 
         private Matrix scaleMatrix;
         private bool dirtyMatrix = true;
-
-        public Camera() {
-            position = Vector2.Zero;
-            zoom = 2f;
-        }
 
         public void Initialize(ref GraphicsDeviceManager device) {
             _Width = device.PreferredBackBufferWidth;
@@ -68,7 +63,7 @@ namespace Deflexion_Redux {
             _Width = Width;
             _Height = Height;
 
-            isFullscreen = !fullScreen;
+            isFullscreen = fullScreen;
 
             ApplyResolutionChanges();
         }
