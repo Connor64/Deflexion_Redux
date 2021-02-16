@@ -14,7 +14,8 @@ namespace Deflexion_Redux {
             {"Player", 0.5f},
             {"Enemies", 0.75f},
             {"Bullets", 0.9f},
-            {"Tiles", 0.95f}
+            {"Tiles", 0.95f},
+            {"Turret", 0.7f},
         };
 
         public Texture2D Texture;

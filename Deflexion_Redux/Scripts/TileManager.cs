@@ -7,7 +7,6 @@ using System.Drawing;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
 
 namespace Deflexion_Redux {
@@ -19,8 +18,10 @@ namespace Deflexion_Redux {
             Texture2D tileTexture = content.Load<Texture2D>("Sprites/Tile");
             for (int x = 0; x < levelData.GetLength(0); x++) {
                 for (int y = 0; y < levelData.GetLength(1); y++) {
-                    if (levelData[x, y] == 1) {
-                        tileSprites.Add(new Sprite(tileTexture, new Vector2(x * tileTexture.Width, y * tileTexture.Height), 0f, new Vector2(1, 1), 0.9f));
+                    switch(levelData[x, y]) {
+                        case 1:
+                            tileSprites.Add(new Sprite(tileTexture, new Vector2(x * tileTexture.Width, y * tileTexture.Height), 0f, new Vector2(1, 1), Sprite.Layers["Tiles"]));
+                            break;
                     }
                 }
             }
@@ -40,6 +41,8 @@ namespace Deflexion_Redux {
 
                     if (pixel == System.Drawing.Color.Black.ToArgb()) {
                         levelData[x, y] = 1;
+                    } else if (pixel == System.Drawing.Color.Red.ToArgb()) {
+                        levelData[x, y] = 2;
                     } else {
                         levelData[x, y] = 0;
                     }

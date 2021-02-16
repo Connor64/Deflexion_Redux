@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 
 namespace Deflexion_Redux {
 
-    public enum ForceMode { Normal, Impulsive };
+    public enum BodyType { Player, Tile, Enemy, Bullet };
     class Physics {
 
         private Vector2 force = Vector2.Zero;
@@ -16,8 +16,9 @@ namespace Deflexion_Redux {
         public Vector2 velocity = Vector2.Zero;
 
         // Values below are defaults and are meant to be changed in the constructor of whatever classes that inherit from this one.
+        public BodyType bodyType;
         public float mass = 1f;
-        public float collisionBoxSize = 8f;        // Size of the object's collider in pixels (unscaled)
+        public float collisionBoxSize = 8f;         // Size of the object's collider in pixels (unscaled)
         public Vector2 position = Vector2.Zero;
         public Vector2 previousPosition = Vector2.Zero;
         public bool instantaneous = false;          // If true, object will stop immediately if no forces are applied
@@ -27,6 +28,8 @@ namespace Deflexion_Redux {
         public float baseSpeedLimit = 500f;         // Base speed limit for the speedLimit value to return to when boosting (does not ever change)
         public float speedLimit = 500f;             // Limits the object's speed (increased when launch occurs)
         public float boostFalloffSpeed = 5000f;     // The speed at which the launch boost speed limit increase shrinks
+
+        public bool movable = true;
 
         public List<Sprite> tiles = null;
 
@@ -50,8 +53,8 @@ namespace Deflexion_Redux {
                 velocity = Vector2.Normalize(velocity) * speedLimit;
             }
 
-            if (tiles != null) {
-                position = collision(position + velocity * deltaTime, tiles);
+            if (bodyType == BodyType.Player) {
+                position = tileCollision(position + velocity * deltaTime, tiles);
             } else {
                 position += velocity * deltaTime;
             }
@@ -78,18 +81,13 @@ namespace Deflexion_Redux {
                 velocity = Vector2.Zero;
             }
 
-            if (speedLimit > baseSpeedLimit) {
-                speedLimit -= boostFalloffSpeed * deltaTime;
-            }
-            if (speedLimit < baseSpeedLimit) {
-                speedLimit = baseSpeedLimit;
-            }
+            speedLimit = speedLimit < baseSpeedLimit ? baseSpeedLimit : speedLimit - boostFalloffSpeed * deltaTime;
 
             force = Vector2.Zero;
             acceleration = Vector2.Zero;
         }
 
-        Vector2 collision(Vector2 newPosition, List<Sprite> tiles) {
+        Vector2 tileCollision(Vector2 newPosition, List<Sprite> tiles) {
             Vector2 nextPosition = newPosition;
 
             Vector2 nextPosition_X = new Vector2(newPosition.X, position.Y);
@@ -97,23 +95,39 @@ namespace Deflexion_Redux {
 
             foreach (Sprite tile in tiles) {
 
-                if (nextPosition_X.Y < tile.Position.Y + tile.Texture.Height * 2 &&
+                if (nextPosition_X.Y - collisionBoxSize < tile.Position.Y + tile.Texture.Height &&
                     nextPosition_X.Y + collisionBoxSize > tile.Position.Y &&
-                    nextPosition_X.X < tile.Position.X + tile.Texture.Width * 2 &&
+                    nextPosition_X.X - collisionBoxSize < tile.Position.X + tile.Texture.Width &&
                     nextPosition_X.X + collisionBoxSize > tile.Position.X) {
                     nextPosition.X = position.X;
                     velocity.X = 0;
                 }
 
-                if (nextPosition_Y.Y < tile.Position.Y + tile.Texture.Height * 2 &&
+                if (nextPosition_Y.Y - collisionBoxSize < tile.Position.Y + tile.Texture.Height &&
                     nextPosition_Y.Y + collisionBoxSize > tile.Position.Y &&
-                    nextPosition_Y.X < tile.Position.X + tile.Texture.Width * 2 &&
+                    nextPosition_Y.X - collisionBoxSize < tile.Position.X + tile.Texture.Width &&
                     nextPosition_Y.X + collisionBoxSize > tile.Position.X) {
                     nextPosition.Y = position.Y;
                     velocity.Y = 0;
                 }
             }
             return nextPosition;
+        }
+
+        public bool collisionCheck<T>(Vector2 newPosition, List<T> physicObjects, out T _obj) where T : Physics {
+            bool result = false;
+            _obj = null;
+            foreach (T obj in physicObjects) {
+                if (newPosition.Y - collisionBoxSize < obj.position.Y + collisionBoxSize &&
+                    newPosition.Y + collisionBoxSize > obj.position.Y - collisionBoxSize &&
+                    newPosition.X - collisionBoxSize < obj.position.X + collisionBoxSize &&
+                    newPosition.X + collisionBoxSize > obj.position.X - collisionBoxSize) {
+                    _obj = obj;
+                    result = true;
+                    break;
+                }
+            }
+            return result;
         }
     }
 }

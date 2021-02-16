@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System;
+﻿using System.Diagnostics;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -12,14 +11,16 @@ namespace Deflexion_Redux {
         private SpriteBatch _spriteBatch;
         private Player player;
         private TileManager tileManager;
-        private BackgroundManager backgroundManager;
+        private Background background;
         private Camera cam;
+        private Turret testTurret;
 
         public KeyboardState kState;
         public KeyboardState kState_OLD;
         public MouseState mState;
         public MouseState mState_OLD;
-        public float deltaTime = 0;
+
+        float deltaTime = 0;
 
         public Main() {
             _graphics = new GraphicsDeviceManager(this);
@@ -47,27 +48,34 @@ namespace Deflexion_Redux {
 
         protected override void LoadContent() {
             tileManager = new TileManager(Content);
-            player = new Player(Content, new Vector2(GraphicsDevice.DisplayMode.Width, GraphicsDevice.DisplayMode.Height), tileManager.tileSprites);
-            backgroundManager = new BackgroundManager(Content);
+            testTurret = new Turret(Content, new Vector2(1920 / 3, 1080 / 3));
+            player = new Player(Content, tileManager.tileSprites, testTurret);
+            background = new Background(Content);
             _spriteBatch = new SpriteBatch(GraphicsDevice);
         }
 
         protected override void Update(GameTime gameTime) {
+            deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape)) {
                 Exit();
             }
 
+            if (player.isAlive) {
+                player.update(deltaTime);
+                player.mouseFollow();
+                bulletCleanup(player.playerBullets, out player.playerBullets);
 
-            player.update((float)gameTime.ElapsedGameTime.TotalSeconds);
-            player.mouseFollow();
-            cam.move(player.previousPosition - player.position);
+                cam.move(player.previousPosition - player.position);
+                background.loop(player.position);
+            }
 
-            backgroundManager.loop(player.position);
+            testTurret.update(player.position, deltaTime);
+            bulletCleanup(testTurret.bullets, out testTurret.bullets);
 
             //kState_OLD = Keyboard.GetState();
             //mState_OLD = Mouse.GetState();
 
-            deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
             base.Update(gameTime);
         }
 
@@ -81,9 +89,25 @@ namespace Deflexion_Redux {
             //_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
             player.Draw(_spriteBatch);
             tileManager.Draw(_spriteBatch);
-            backgroundManager.draw(_spriteBatch);
+            background.draw(_spriteBatch);
+            testTurret.Draw(_spriteBatch);
             _spriteBatch.End();
             base.Draw(gameTime);
         }
+
+        void bulletCleanup(List<Bullet> bullets, out List<Bullet> outBullets) {
+            List<Bullet> bulletsToRemove = bullets;
+            for (int i = 0; i < bullets.Count; i++) {
+                Bullet bullet = bullets[i];
+                if (bullet.isActive) {
+                    bullet.PhysicsUpdate(deltaTime);
+                    bullet.update(deltaTime);
+                } else {
+                    bulletsToRemove.RemoveAt(i);
+                }
+            }
+            outBullets = bulletsToRemove;
+        }
+
     }
 }

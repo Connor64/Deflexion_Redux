@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -19,25 +18,32 @@ namespace Deflexion_Redux {
         private Sprite gunSprite;
         private Texture2D bulletTexture;
 
-        private Vector2 bounds;
         private Camera cam;
 
         private KeyboardState kstate_old;
         private MouseState mstate_old;
 
-        private List<Bullet> playerBullets = new List<Bullet>();
+        public bool isAlive = true;
 
-        public Player(ContentManager Content, Vector2 bounds, List<Sprite> tiles) {
+        private Turret test_turret;
+
+        public List<Bullet> playerBullets = new List<Bullet>();
+
+        public Player(ContentManager Content, List<Sprite> tiles, Turret turret) {
             cam = Camera.Instance;
-            this.bounds = bounds;
-            boundary = bounds;
             position = new Vector2(cam._Width / 4, cam._Height / 4);
             mass = 1f;
-            baseSpeedLimit = 500f;
+            baseSpeedLimit = 1000f;
             collisionBoxSize = 32f;
             this.tiles = tiles;
             instantaneous = false;
             resistance = 1000f;
+
+            test_turret = turret;
+
+            collisionBoxSize = 4f;
+
+            bodyType = BodyType.Player;
 
             playerSprite = new Sprite(Content.Load<Texture2D>("Sprites/test_ship_bottom"), position, 0, Vector2.One, Sprite.Layers["Player"], new Vector2(8, 8));
             shieldSprite = new Sprite(Content.Load<Texture2D>("Sprites/test_shield"), playerSprite.Position, 0, Vector2.One, Sprite.Layers["Player"], new Vector2(32, 32));
@@ -53,6 +59,27 @@ namespace Deflexion_Redux {
             MouseState mstate = Mouse.GetState();
             KeyboardState kstate = Keyboard.GetState();
 
+            movement(kstate);
+
+            if (mstate.LeftButton == ButtonState.Pressed && mstate_old.LeftButton != ButtonState.Pressed && playerBullets.Count < maxBullets) {
+                shoot();
+            }
+
+            PhysicsUpdate(deltaTime);
+            
+            if (collisionCheck(position, test_turret.bullets, out Bullet bullet)) {
+                isAlive = false;
+                bullet.isActive = false;
+            }
+
+            playerSprite.Position = position;
+            gunSprite.Position = position;
+
+            kstate_old = kstate;
+            mstate_old = mstate;
+        }
+
+        void movement(KeyboardState kstate) {
             Vector2 direction = Vector2.Zero;
 
             if (kstate.IsKeyDown(Keys.W) && !kstate.IsKeyDown(Keys.S)) {
@@ -68,33 +95,10 @@ namespace Deflexion_Redux {
             }
 
             addForce(direction, playerForce, 0);
-
-            if (mstate.LeftButton == ButtonState.Pressed && mstate_old.LeftButton != ButtonState.Pressed && playerBullets.Count < maxBullets) {
-                shoot();
-            }
-
-            PhysicsUpdate(deltaTime);
-            List<Bullet> bulletsToRemove = playerBullets;
-            for (int i = 0; i < playerBullets.Count; i++) {
-                Bullet bullet = playerBullets[i];
-                if (bullet.isActive) {
-                    bullet.PhysicsUpdate(deltaTime);
-                    bullet.update(deltaTime);
-                } else {
-                    bulletsToRemove.RemoveAt(i);
-                }
-            }
-            playerBullets = bulletsToRemove;
-
-            playerSprite.Position = position;
-            gunSprite.Position = position;
-
-            kstate_old = kstate;
-            mstate_old = mstate;
         }
 
         void shoot() {
-            playerBullets.Add(new Bullet(bulletTexture, new Vector2(position.X - playerSprite.textureSize.X, position.Y - playerSprite.textureSize.Y), gunSprite.Rotation, bounds));
+            playerBullets.Add(new Bullet(bulletTexture, position, gunSprite.Rotation, BulletType.Player));
             addForce(new Vector2(MathF.Cos(gunSprite.Rotation + MathF.PI / 2), MathF.Sin(gunSprite.Rotation + MathF.PI / 2)), playerForce * 15, baseSpeedLimit * 2.3f);
         }
 

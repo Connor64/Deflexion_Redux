@@ -7,14 +7,14 @@ using Microsoft.Xna.Framework.Content;
 using System.Diagnostics;
 
 namespace Deflexion_Redux {
-    class BackgroundManager {
+    class Background {
         public Sprite[] backgrounds = new Sprite[4];
         private Vector2 textureSize;
         private Camera cam;
 
         private Vector2[][] positions;
         
-        public BackgroundManager(ContentManager content) {
+        public Background(ContentManager content) {
             Texture2D backgroundTexture = content.Load<Texture2D>("Sprites/spaceBackground_test");
             textureSize = new Vector2(backgroundTexture.Width, backgroundTexture.Height);
             positions = generatePositions();
