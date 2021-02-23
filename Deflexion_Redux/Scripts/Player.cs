@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
 
 namespace Deflexion_Redux {
-    class Player : Physics {
+    public class Player : Physics {
 
         private float playerForce = 1500f;
 
@@ -16,8 +16,8 @@ namespace Deflexion_Redux {
         private Sprite gunSprite;
         private Texture2D bulletTexture;
 
-        private Camera cam;
-        private EnemyManager enemyManager;
+        private Camera cam = Camera.Instance;
+        private EnemyManager enemyManager = EnemyManager.Instance;
 
         private KeyboardState kstate_old;
         private MouseState mstate_old;
@@ -27,15 +27,11 @@ namespace Deflexion_Redux {
         public List<Bullet> playerBullets = new List<Bullet>();
         int maxBullets = 25;
 
-        public Player(ContentManager Content, List<Sprite> tiles) {
-            cam = Camera.Instance;
-            enemyManager = EnemyManager.Instance;
-
+        public Player() {
             position = new Vector2(0.5f, 0.5f);
             mass = 1f;
             baseSpeedLimit = 500f;
             collisionBoxSize = 32f;
-            this.tiles = tiles;
             instantaneous = false;
             resistance = 1000f;
 
@@ -43,11 +39,10 @@ namespace Deflexion_Redux {
 
             bodyType = BodyType.Player;
 
-            playerSprite = new Sprite(Content.Load<Texture2D>("Sprites/test_ship_bottom"), position, 0, Vector2.One, Sprite.Layers["Player"], new Vector2(8, 8));
-            shieldSprite = new Sprite(Content.Load<Texture2D>("Sprites/test_shield"), playerSprite.Position, 0, Vector2.One, Sprite.Layers["Player"], new Vector2(32, 32));
-            gunSprite = new Sprite(Content.Load<Texture2D>("Sprites/test_ship_top"), position, 0, Vector2.One, Sprite.Layers["Player"] - 0.5f, new Vector2(16, 17));
-            shieldSprite.Layer = 0.5f;
-            bulletTexture = Content.Load<Texture2D>("Sprites/shotgunBlast");
+            playerSprite = new Sprite(TextureType.player_bottom, position, 0, Vector2.One, Sprite.Layers["Player"], new Vector2(8, 8));
+            shieldSprite = new Sprite(TextureType.player_shield, position, 0, Vector2.One, Sprite.Layers["Player"], new Vector2(32, 32));
+            gunSprite = new Sprite(TextureType.player_gun, position, MathF.PI, Vector2.One, Sprite.Layers["Player"] - 0.1f, new Vector2(16, 17));
+            bulletTexture = AssetManager.textures[TextureType.test_player_blast];
 
             kstate_old = Keyboard.GetState();
             mstate_old = Mouse.GetState();
@@ -61,6 +56,8 @@ namespace Deflexion_Redux {
 
             if (mstate.LeftButton == ButtonState.Pressed && mstate_old.LeftButton != ButtonState.Pressed && playerBullets.Count < maxBullets) {
                 shoot();
+            } else if (mstate.RightButton == ButtonState.Pressed && mstate_old.RightButton != ButtonState.Pressed && playerBullets.Count < maxBullets) {
+                boost();
             }
 
             PhysicsUpdate(deltaTime);
@@ -72,6 +69,8 @@ namespace Deflexion_Redux {
 
             playerSprite.Position = position;
             gunSprite.Position = position;
+
+            mouseFollow();
 
             kstate_old = kstate;
             mstate_old = mstate;
@@ -96,22 +95,24 @@ namespace Deflexion_Redux {
         }
 
         void shoot() {
-            playerBullets.Add(new Bullet(bulletTexture, position, gunSprite.Rotation, BulletType.Player));
-            addForce(new Vector2(MathF.Cos(gunSprite.Rotation + MathF.PI / 2), MathF.Sin(gunSprite.Rotation + MathF.PI / 2)), playerForce * 15, baseSpeedLimit * 2.3f);
+            playerBullets.Add(new Bullet(TextureType.test_player_blast, position, 650, gunSprite.Rotation, 2));
+            addForce(new Vector2(MathF.Cos(gunSprite.Rotation + MathF.PI / 2), MathF.Sin(gunSprite.Rotation + MathF.PI / 2)), playerForce * 7.5f, baseSpeedLimit * 1.9f);
         }
 
+        void boost() {
+            addForce(new Vector2(MathF.Cos(gunSprite.Rotation + MathF.PI / 2), MathF.Sin(gunSprite.Rotation + MathF.PI / 2)), playerForce * 20, baseSpeedLimit * 2.3f);
+        }
+
+
         public void mouseFollow() {
-            MouseState mState = Mouse.GetState();
-            shieldSprite.Position = playerSprite.Position;
-            Vector2 mousePosition = new Vector2(mState.X, mState.Y);
-            Vector2 virtualViewPort = new Vector2(cam.virtualViewportX, cam.virtualViewportY);
-            mousePosition = Vector2.Transform(mousePosition - virtualViewPort, Matrix.Invert(cam.getTransformationMatrix()));
-            float x = shieldSprite.Position.X - mousePosition.X + cam.position.X;
-            float y = shieldSprite.Position.Y - mousePosition.Y + cam.position.Y;
+            Vector2 mousePosition = cam.getMousePosition();
+            float x = position.X - mousePosition.X;
+            float y = position.Y - mousePosition.Y;
 
-            shieldSprite.Rotation = -(float)Math.Atan2(x, y);
+            shieldSprite.Position = position;
 
-            gunSprite.Rotation = shieldSprite.Rotation + MathF.PI;
+            gunSprite.Rotation = -(float)Math.Atan2(x, y);
+            shieldSprite.Rotation = gunSprite.Rotation;
         }
 
         public void Draw(SpriteBatch spriteBatch) {

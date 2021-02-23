@@ -10,21 +10,18 @@ namespace Deflexion_Redux {
     class Background {
         public Sprite[] backgrounds = new Sprite[4];
         private Vector2 textureSize;
-        private Camera cam;
         private Sprite currentSprite;
 
         private Vector2[][] positions;
         
-        public Background(ContentManager content) {
-            Texture2D backgroundTexture = content.Load<Texture2D>("Sprites/spaceBackground_test");
-            textureSize = new Vector2(backgroundTexture.Width, backgroundTexture.Height);
+        public Background(Vector2 startingPosition) {
+            textureSize = new Vector2(AssetManager.textures[TextureType.test_space_background].Width, AssetManager.textures[TextureType.test_space_background].Height);
             positions = generatePositions();
 
             for (int i = 0; i < backgrounds.Length; i++) {
-                backgrounds[i] = new Sprite(backgroundTexture, new Vector2((textureSize.X * i) - textureSize.X, 0), 0, Vector2.One, 1);
+                backgrounds[i] = new Sprite(TextureType.test_space_background, (textureSize * i) + startingPosition - textureSize/2, 0, Vector2.One, 1);
             }
 
-            cam = Camera.Instance;
             currentSprite = backgrounds[0];
         }
 
@@ -58,10 +55,10 @@ namespace Deflexion_Redux {
             currentSprite = onSprite(playerPosition);
             if (currentSprite != null) {
                 int positionVal = 0;
-                if (playerPosition.X > currentSprite.textureSize.X / 2 + currentSprite.Position.X) {
+                if (playerPosition.X > currentSprite.Size.X / 2 + currentSprite.Position.X) {
                     positionVal++;
                 }
-                if (playerPosition.Y < currentSprite.textureSize.Y / 2 + currentSprite.Position.Y) {
+                if (playerPosition.Y < currentSprite.Size.Y / 2 + currentSprite.Position.Y) {
                     positionVal += 2;
                 }
 
@@ -79,9 +76,9 @@ namespace Deflexion_Redux {
             Sprite sprite = null;
             foreach (Sprite backSprite in backgrounds) {
                 if (playerPosition.X > backSprite.Position.X &&
-                    playerPosition.X < backSprite.Position.X + backSprite.textureSize.X &&
+                    playerPosition.X < backSprite.Position.X + backSprite.Size.X &&
                     playerPosition.Y > backSprite.Position.Y &&
-                    playerPosition.Y < backSprite.Position.Y + backSprite.textureSize.Y) {
+                    playerPosition.Y < backSprite.Position.Y + backSprite.Size.Y) {
                     // If the player is within the sprite's bounds
                     sprite = backSprite;
                     break;

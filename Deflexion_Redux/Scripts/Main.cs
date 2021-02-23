@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.IO;
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,7 +12,8 @@ namespace Deflexion_Redux {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         private Player player;
-        private TileManager tileManager;
+        private LevelManager levelManager;
+        private LevelEditor levelEditor;
         private EnemyManager enemyManager;
         private Background background;
         private Camera cam;
@@ -19,6 +22,7 @@ namespace Deflexion_Redux {
         public KeyboardState kState_OLD;
         public MouseState mState;
         public MouseState mState_OLD;
+        private float scrollValue_OLD = 0;
 
         float deltaTime = 0;
 
@@ -30,12 +34,15 @@ namespace Deflexion_Redux {
 
         protected override void Initialize() {
             GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            //IsMouseVisible = false;
 
             cam = Camera.Instance;
             cam.Initialize(ref _graphics);
-            cam.SetVirtualResolution(960, 540);
+            cam.SetVirtualResolution(GraphicsDevice.DisplayMode.Width / 2, GraphicsDevice.DisplayMode.Height / 2);
             cam.SetResolution(GraphicsDevice.DisplayMode.Width, GraphicsDevice.DisplayMode.Height, true);
 
+            levelManager = LevelManager.Instance;
+            levelEditor = LevelEditor.Instance;
             enemyManager = EnemyManager.Instance;
 
             _graphics.ApplyChanges();
@@ -46,71 +53,103 @@ namespace Deflexion_Redux {
         }
 
         protected override void LoadContent() {
-            enemyManager.Initialize(Content);
-            enemyManager.enemies.Add(new Turret(new Vector2(1920 / 3, 1080 / 3)));
-            tileManager = new TileManager(Content);
-            player = new Player(Content, tileManager.tileSprites);
-            background = new Background(Content);
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
+            AssetManager.LoadTextures(Content);
 
-            cam.move(new Vector2(1920 / 4, 1080 / 4) - player.position);
-            //cam.position = player.position - new Vector2(cam._Width/2, -cam._Height/2);
+            levelManager.Load(LevelType.test_level, "Content/entityLayout_1.bmp");
+
+            player = new Player();
+
+            enemyManager.Load(player);
+
+            levelEditor.Load(Content.RootDirectory, ref _graphics, "Tilesets");
+
+            player.position = Vector2.Zero;
+            cam.position = player.position;
+
+            background = new Background(player.position);
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
         }
 
         protected override void Update(GameTime gameTime) {
             deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape)) {
+                //IsMouseVisible = true;
                 Exit();
             }
 
-            if (player.isAlive) {
-                player.update(deltaTime);
-                player.mouseFollow();
-                bulletCleanup(player.playerBullets, out player.playerBullets);
+            if (!levelEditor.visible) {
+                if (player.isAlive) {
+                    player.update(deltaTime);
 
-                cam.move(player.previousPosition - player.position);
-                background.loop(player.position);
+                    cam.move(player.position, deltaTime);
+                    background.loop(player.position);
+                }
+
+                bulletUpdate(player.playerBullets, out player.playerBullets);
+                enemyManager.Update(player.position, deltaTime);
+                bulletUpdate(enemyManager.enemyBullets, out enemyManager.enemyBullets);
+                cam.zoom = 1;
+            } else {
+                KeyboardState kState = Keyboard.GetState();
+
+                if (kState.IsKeyDown(Keys.W)) {
+                    cam.position.Y -= 5;
+                } else if (kState.IsKeyDown(Keys.S)) {
+                    cam.position.Y += 5;
+                }
+                if (kState.IsKeyDown(Keys.A)) {
+                    cam.position.X -= 5;
+                } else if (kState.IsKeyDown(Keys.D)) {
+                    cam.position.X += 5;
+                }
+
+
+                if (Mouse.GetState().ScrollWheelValue != scrollValue_OLD) {
+                    if (Mouse.GetState().ScrollWheelValue > scrollValue_OLD) {
+                        cam.zoom += 0.1f;
+                    } else {
+                        cam.zoom -= 0.1f;
+                    }
+                    levelEditor.ScaleUI();
+                    //cam.zoom += (Mouse.GetState().ScrollWheelValue - scrollValue_OLD) / 1080f;
+                }
+                levelEditor.Update();
+                scrollValue_OLD = Mouse.GetState().ScrollWheelValue;
             }
 
-            enemyManager.Update(player.position, deltaTime);
-            bulletCleanup(enemyManager.enemyBullets, out enemyManager.enemyBullets);
-
-            //kState_OLD = Keyboard.GetState();
-            //mState_OLD = Mouse.GetState();
+            levelEditor.Toggle();
 
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime) {
-            //GraphicsDevice.Clear(Color.CornflowerBlue); // background color
-
             cam.BeginDraw();
             _spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.NonPremultiplied,
-                           SamplerState.PointClamp, null, null, null, cam.getMatrix() * cam.getTransformationMatrix());
+                               SamplerState.PointClamp, null, null, null, cam.getMatrix() * cam.getTransformationMatrix());
 
             //_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
             player.Draw(_spriteBatch);
-            tileManager.Draw(_spriteBatch);
+            levelManager.Draw(_spriteBatch);
             background.draw(_spriteBatch);
-            //testTurret.Draw(_spriteBatch);
             enemyManager.Draw(_spriteBatch);
+
+            levelEditor.Draw(_spriteBatch);
             _spriteBatch.End();
             base.Draw(gameTime);
         }
 
-        void bulletCleanup(List<Bullet> bullets, out List<Bullet> outBullets) {
-            List<Bullet> bulletsToRemove = bullets;
+        void bulletUpdate(List<Bullet> bullets, out List<Bullet> outBullets) {
+            List<Bullet> toRemove = bullets;
             for (int i = 0; i < bullets.Count; i++) {
                 Bullet bullet = bullets[i];
                 if (bullet.isActive) {
-                    bullet.PhysicsUpdate(deltaTime);
                     bullet.update(deltaTime);
                 } else {
-                    bulletsToRemove.RemoveAt(i);
+                    toRemove.RemoveAt(i);
                 }
             }
-            outBullets = bulletsToRemove;
+            outBullets = toRemove;
         }
     }
 }
