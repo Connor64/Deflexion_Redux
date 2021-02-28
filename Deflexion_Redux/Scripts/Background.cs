@@ -14,12 +14,12 @@ namespace Deflexion_Redux {
 
         private Vector2[][] positions;
         
-        public Background(Vector2 startingPosition) {
-            textureSize = new Vector2(AssetManager.textures[TextureType.test_space_background].Width, AssetManager.textures[TextureType.test_space_background].Height);
+        public Background(Vector2 startingPosition, TextureType texture) {
+            textureSize = new Vector2(AssetManager.textures[TextureType.test_space_background].Width, AssetManager.textures[texture].Height);
             positions = generatePositions();
 
             for (int i = 0; i < backgrounds.Length; i++) {
-                backgrounds[i] = new Sprite(TextureType.test_space_background, (textureSize * i) + startingPosition - textureSize/2, 0, Vector2.One, 1);
+                backgrounds[i] = new Sprite(TextureType.test_space_background, (textureSize * i) + startingPosition - textureSize/2, 0, Sprite.Layers[LayerType.Background], Vector2.One);
             }
 
             currentSprite = backgrounds[0];
@@ -87,10 +87,10 @@ namespace Deflexion_Redux {
             return sprite;
         }
 
-        public void draw(SpriteBatch spriteBatch) {
+        public void Draw(SpriteBatch spriteBatch) {
             //backgroundSprite.draw(spriteBatch);
             foreach (Sprite backSprite in backgrounds) {
-                backSprite.draw(spriteBatch);
+                backSprite.Draw(spriteBatch);
             }
         }
     }

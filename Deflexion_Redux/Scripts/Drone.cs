@@ -19,7 +19,7 @@ namespace Deflexion_Redux {
             baseSpeedLimit = 300;
             screenTolerance = new Vector2(128, 128);
             this.position = position;
-            shipSprite = new Sprite(TextureType.test_drone, position, 0, Vector2.One, Sprite.Layers["Turret"], new Vector2(8, 8));
+            shipSprite = new Sprite(TextureType.test_drone, position, 0, Sprite.Layers[LayerType.Turret], Vector2.One, new Vector2(8, 8));
             
         }
 
@@ -54,7 +54,7 @@ namespace Deflexion_Redux {
         }
 
         public override void Draw(SpriteBatch spriteBatch) {
-            shipSprite.draw(spriteBatch);
+            shipSprite.Draw(spriteBatch);
         }
     }
 }

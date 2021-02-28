@@ -35,7 +35,7 @@ namespace Deflexion_Redux {
         //public bool stuck = false;
 
         //public List<Tile> tiles = LevelManager.Instance.tiles;
-        public Tile[,] tiles = LevelManager.Instance.getTiles();
+        public Tile[,] tiles = LevelManager.Instance.tiles;
 
         public void addForce(Vector2 direction, float strength, float launchLimit) {
             if (direction != Vector2.Zero) {
@@ -45,7 +45,6 @@ namespace Deflexion_Redux {
                 speedLimit = launchLimit;
             }
         }
-
 
         public void PhysicsUpdate(float deltaTime) {
             previousPosition = position;

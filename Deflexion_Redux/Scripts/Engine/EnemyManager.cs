@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 
 namespace Deflexion_Redux {
-    class EnemyManager {
+    public class EnemyManager {
         public List<Bullet> enemyBullets;
         // Global enemy projectiles
 

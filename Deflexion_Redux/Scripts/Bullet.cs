@@ -27,7 +27,7 @@ namespace Deflexion_Redux {
             collisionBoxSize = 1f * collisionScale;
             position = startingPosition;
             resistance = 0f;
-            bulletSprite = new Sprite(textureType, position, 0, Vector2.One, Sprite.Layers["Bullets"], new Vector2(8, 8));
+            bulletSprite = new Sprite(textureType, position, 0, Sprite.Layers[LayerType.Bullets], Vector2.One, new Vector2(8, 8));
             Vector2 direction = new Vector2(MathF.Cos(rotation - MathF.PI / 2), MathF.Sin(rotation - MathF.PI / 2));
             addForce(direction, force, 0);
 
@@ -47,7 +47,7 @@ namespace Deflexion_Redux {
         }
 
         public void draw(SpriteBatch spriteBatch) {
-            bulletSprite.draw(spriteBatch);
+            bulletSprite.Draw(spriteBatch);
         }
     }
 }

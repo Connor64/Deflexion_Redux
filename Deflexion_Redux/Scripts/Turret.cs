@@ -18,8 +18,8 @@ namespace Deflexion_Redux {
 
             elapsedTime = (float)rnd.NextDouble();
 
-            baseSprite = new Sprite(TextureType.turret_bottom, position, 0, Vector2.One, Sprite.Layers["Turret"], new Vector2(8, 8));
-            gunSprite = new Sprite(TextureType.turret_top, position, 0, Vector2.One, Sprite.Layers["Turret"] - 0.01f, 
+            baseSprite = new Sprite(TextureType.turret_bottom, position, 0, Sprite.Layers[LayerType.Turret], Vector2.One, new Vector2(8, 8));
+            gunSprite = new Sprite(TextureType.turret_top, position, 0, Sprite.Layers[LayerType.Turret] - 0.01f, Vector2.One, 
                                    new Vector2(AssetManager.textures[TextureType.turret_top].Width/2, AssetManager.textures[TextureType.turret_top].Height/2));
         }
 
@@ -47,8 +47,8 @@ namespace Deflexion_Redux {
 
 
         public override void Draw(SpriteBatch spriteBatch) {
-            baseSprite.draw(spriteBatch);
-            gunSprite.draw(spriteBatch);
+            baseSprite.Draw(spriteBatch);
+            gunSprite.Draw(spriteBatch);
         }
     }
 }

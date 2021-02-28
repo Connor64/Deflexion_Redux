@@ -1,0 +1,109 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+
+namespace Deflexion_Redux {
+
+    public enum ButtonStyle {
+        Default,
+        Gray,
+    }
+
+    public class Button {
+        public Action action;
+        public Vector2 position;
+        public Vector2 size;
+
+        private Color backgroundColor = Color.White;
+        private Color hoverColor = Color.Azure;
+        private Color clickColor = Color.LightCyan;
+
+        private Panel panel;
+        private MouseState mState_OLD;
+
+        public Button(Action action, Vector2 position, Vector2 size, ref GraphicsDevice device) {
+            this.position = position;
+            this.size = size;
+            this.action = action;
+
+            panel = new Panel(position, size, backgroundColor, Sprite.Layers[LayerType.UI] - 0.01f, ref device);
+            mState_OLD = Mouse.GetState();
+        }
+
+        public Button(Action action, Vector2 position, Vector2 size, ref GraphicsDevice device, Color color, string text, FontType font) : this(action, position, size, ref device) {
+            backgroundColor = color;
+            panel = new Panel(position, size, color, Sprite.Layers[LayerType.UI] - 0.01f, ref device, text, font, Alignment.Center);
+        }
+
+        public void Update() {
+            if (panel.isHovering()){
+                panel.changeColor(hoverColor);
+                if (Mouse.GetState().LeftButton == ButtonState.Pressed) {
+                    if (mState_OLD.LeftButton != ButtonState.Pressed) {
+                        action.Invoke();
+                    }
+                    panel.changeColor(clickColor);
+                }
+            } else {
+                panel.changeColor(backgroundColor);
+            }
+            mState_OLD = Mouse.GetState();
+        }
+
+        public void setSize(Vector2 size) {
+            this.size = size;
+            panel.size = size;
+        }
+        
+        public void setSize(Vector2 size, float textScale) {
+            this.size = size;
+            panel.size = size;
+            panel.setText(panel.getText(), panel.textAlignment, textScale);
+        }
+
+        public void setText(string text, Alignment alignment) {
+            panel.setText(text, alignment, panel.textScale);
+        }
+
+        public void setText(string text, Alignment alignment, float textScale, FontType font) {
+            panel.font = font;
+            panel.setText(text, alignment, textScale);
+        }
+
+        public void setPosition(Vector2 position) {
+            this.position = position;
+            panel.position = position;
+        }
+
+        public void setColor(Color backgroundColor, Color hoverColor, Color clickColor, Color textColor) {
+            this.backgroundColor = backgroundColor;
+            panel.changeColor(backgroundColor);
+            panel.textColor = textColor;
+            this.hoverColor = hoverColor;
+            this.clickColor = clickColor;
+        }
+
+        public void setColor(ButtonStyle buttonStyle, float opacity) {
+            switch (buttonStyle) {
+                case ButtonStyle.Gray:
+                    backgroundColor = Color.Gray * opacity;
+                    hoverColor = Color.LightGray * opacity;
+                    clickColor = Color.Black * opacity;
+
+                    panel.changeColor(backgroundColor);
+                    panel.textColor = Color.White;
+                    break;
+                case ButtonStyle.Default:
+                    break;
+            }
+        }
+
+        public void Draw(SpriteBatch spriteBatch) {
+            panel.Draw(spriteBatch);
+            //spriteBatch.DrawString(font, text, position, Color.Black);
+        }
+    }
+}

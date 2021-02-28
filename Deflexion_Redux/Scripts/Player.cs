@@ -39,16 +39,16 @@ namespace Deflexion_Redux {
 
             bodyType = BodyType.Player;
 
-            playerSprite = new Sprite(TextureType.player_bottom, position, 0, Vector2.One, Sprite.Layers["Player"], new Vector2(8, 8));
-            shieldSprite = new Sprite(TextureType.player_shield, position, 0, Vector2.One, Sprite.Layers["Player"], new Vector2(32, 32));
-            gunSprite = new Sprite(TextureType.player_gun, position, MathF.PI, Vector2.One, Sprite.Layers["Player"] - 0.1f, new Vector2(16, 17));
+            playerSprite = new Sprite(TextureType.player_bottom, position, 0, Sprite.Layers[LayerType.Player], Vector2.One, new Vector2(8, 8));
+            shieldSprite = new Sprite(TextureType.player_shield, position, 0, Sprite.Layers[LayerType.Player], Vector2.One, new Vector2(32, 32));
+            gunSprite = new Sprite(TextureType.player_gun, position, MathF.PI, Sprite.Layers[LayerType.Player] - 0.1f, Vector2.One, new Vector2(16, 17));
             bulletTexture = AssetManager.textures[TextureType.test_player_blast];
 
             kstate_old = Keyboard.GetState();
             mstate_old = Mouse.GetState();
         }
 
-        public void update(float deltaTime) {
+        public void Update(float deltaTime) {
             MouseState mstate = Mouse.GetState();
             KeyboardState kstate = Keyboard.GetState();
 
@@ -117,9 +117,9 @@ namespace Deflexion_Redux {
 
         public void Draw(SpriteBatch spriteBatch) {
             if (isAlive) {
-                playerSprite.draw(spriteBatch);
-                gunSprite.draw(spriteBatch);
-                shieldSprite.draw(spriteBatch);
+                playerSprite.Draw(spriteBatch);
+                gunSprite.Draw(spriteBatch);
+                shieldSprite.Draw(spriteBatch);
             }
             foreach (Bullet bullet in playerBullets) {
                 bullet.draw(spriteBatch);

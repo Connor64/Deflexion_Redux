@@ -10,7 +10,6 @@
 
 #-------------------------------- References --------------------------------#
 
-/reference:..\bin\Debug\netcoreapp3.1\Deflexion_Redux.dll
 
 #---------------------------------- Content ---------------------------------#
 
@@ -20,6 +19,18 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
 /build:Arial.spritefont
+
+#begin Audio/Xyralon (Body).mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/Xyralon (Body).mp3
+
+#begin Audio/Xyralon (Intro).mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/Xyralon (Intro).mp3
 
 #begin entityLayout_1.bmp
 /importer:TextureImporter
@@ -32,11 +43,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:entityLayout_1.bmp
-
-#begin Levels/testLevel.xml
-/importer:XmlImporter
-/processor:PassThroughProcessor
-/build:Levels/testLevel.xml
 
 #begin poopyLevel.bmp
 /importer:TextureImporter
@@ -73,6 +79,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Sprites/deflector_SpriteSheet.png
+
+#begin Sprites/deflexionLogo.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Sprites/deflexionLogo.png
 
 #begin Sprites/drone_temp.png
 /importer:TextureImporter

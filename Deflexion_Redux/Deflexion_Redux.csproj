@@ -19,9 +19,6 @@
     <Content Include="Content\entityLayout_1.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Page Include="Content\Levels\testLevel.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Page>
     <Content Include="Content\poopyLevel.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -45,6 +42,9 @@
   <ItemGroup>
     <Reference Include="MonoGame.Framework.Content.Pipeline">
       <HintPath>..\..\..\..\.nuget\packages\monogame.content.builder.task\3.8.0.1641\tools\netcoreapp3.1\any\MonoGame.Framework.Content.Pipeline.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Forms">
+      <HintPath>..\..\..\..\..\..\Windows\Microsoft.NET\Framework\v4.0.30319\System.Windows.Forms.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
