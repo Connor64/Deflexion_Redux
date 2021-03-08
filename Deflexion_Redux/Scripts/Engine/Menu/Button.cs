@@ -14,8 +14,6 @@ namespace Deflexion_Redux {
 
     public class Button {
         public Action action;
-        public Vector2 position;
-        public Vector2 size;
 
         private Color backgroundColor = Color.White;
         private Color hoverColor = Color.Azure;
@@ -25,17 +23,23 @@ namespace Deflexion_Redux {
         private MouseState mState_OLD;
 
         public Button(Action action, Vector2 position, Vector2 size, ref GraphicsDevice device) {
-            this.position = position;
-            this.size = size;
             this.action = action;
 
             panel = new Panel(position, size, backgroundColor, Sprite.Layers[LayerType.UI] - 0.01f, ref device);
             mState_OLD = Mouse.GetState();
         }
 
+        public Button(Action action, ScreenPosition pos, Vector2 offset, Vector2 size, ref GraphicsDevice device) : this(action, new Vector2(), size, ref device) {
+            panel = new Panel(pos, offset, size, backgroundColor, Sprite.Layers[LayerType.UI] - 0.01f, ref device);
+        }
+
         public Button(Action action, Vector2 position, Vector2 size, ref GraphicsDevice device, Color color, string text, FontType font) : this(action, position, size, ref device) {
             backgroundColor = color;
             panel = new Panel(position, size, color, Sprite.Layers[LayerType.UI] - 0.01f, ref device, text, font, Alignment.Center);
+        }
+
+        public Button(Action action, ScreenPosition pos, Vector2 offset, Vector2 size, ref GraphicsDevice device, Color color, string text, FontType font) : this(action, new Vector2(), size, ref device, color, text, font) {
+            panel = new Panel(pos, offset, size, color, Sprite.Layers[LayerType.UI] - 0.01f, ref device);
         }
 
         public void Update() {
@@ -51,31 +55,6 @@ namespace Deflexion_Redux {
                 panel.changeColor(backgroundColor);
             }
             mState_OLD = Mouse.GetState();
-        }
-
-        public void setSize(Vector2 size) {
-            this.size = size;
-            panel.size = size;
-        }
-        
-        public void setSize(Vector2 size, float textScale) {
-            this.size = size;
-            panel.size = size;
-            panel.setText(panel.getText(), panel.textAlignment, textScale);
-        }
-
-        public void setText(string text, Alignment alignment) {
-            panel.setText(text, alignment, panel.textScale);
-        }
-
-        public void setText(string text, Alignment alignment, float textScale, FontType font) {
-            panel.font = font;
-            panel.setText(text, alignment, textScale);
-        }
-
-        public void setPosition(Vector2 position) {
-            this.position = position;
-            panel.position = position;
         }
 
         public void setColor(Color backgroundColor, Color hoverColor, Color clickColor, Color textColor) {
@@ -100,6 +79,50 @@ namespace Deflexion_Redux {
                     break;
             }
         }
+
+        public void setText(string text, Alignment alignment) {
+            panel.setText(text, alignment, panel.textScale);
+        }
+
+        public void setText(string text, Alignment alignment, float textScale, FontType font) {
+            panel.font = font;
+            panel.setText(text, alignment, textScale);
+        }
+
+        public void scaleScreenPosition(ScreenPosition pos, Vector2 offset, float scalar) {
+            panel.scaleScreenPosition(pos, offset, scalar);
+        }
+
+        public void scaleRelativePosition(Panel parentPanel, ScreenPosition pos, Vector2 offset, float scalar) {
+            panel.scaleRelativePosition(parentPanel, pos, offset, scalar);
+        }
+
+        public void scaleSize(float scalar) {
+            panel.scaleSize(scalar);
+            panel.setText(panel.getText(), panel.textAlignment, scalar);
+        }
+
+        public void setSize(Vector2 size) {
+            panel.size = size;
+        }
+
+        public void setSize(Vector2 size, float textScale) {
+            panel.size = size;
+            panel.setText(panel.getText(), panel.textAlignment, textScale);
+        }
+
+        public Vector2 getSize() {
+            return panel.size;
+        }
+
+        public void setPosition(Vector2 position) {
+            panel.position = position;
+        }
+
+        public Vector2 getPosition() {
+            return panel.position;
+        }
+
 
         public void Draw(SpriteBatch spriteBatch) {
             panel.Draw(spriteBatch);

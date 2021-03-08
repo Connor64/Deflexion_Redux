@@ -22,13 +22,12 @@ namespace Deflexion_Redux {
         public override void LoadContent(ContentManager content) {
             background = new Sprite(TextureType.test_space_background, new Vector2(-cam.virtualWidth / 2, -cam.virtualHeight / 2), 0, Sprite.Layers[LayerType.Background], Vector2.One);
             
-            back_Button = new Button(delegate { GameStateManager.Instance.RemoveTopScreen(); }, 
-                new Vector2(-cam.virtualWidth / 2.25f, (cam.virtualHeight / 2.25f) - 50), new Vector2(100, 50), ref _graphicsDevice);
+            back_Button = new Button(delegate { GameStateManager.Instance.RemoveTopScreen(); }, ScreenPosition.BottomLeft, new Vector2(25, -25), new Vector2(100, 50), ref _graphicsDevice);
             back_Button.setText("Return", Alignment.Center, 1, FontType.arial);
             back_Button.setColor(ButtonStyle.Gray, 0.75f);
 
             newLevel_Button = new Button(delegate { GameStateManager.Instance.ChangeScreen(new GameplayScreen(_graphicsDevice, LevelType.new_level)); },
-                new Vector2(-50, -25), new Vector2(100, 50), ref _graphicsDevice);
+                ScreenPosition.Center, Vector2.Zero, new Vector2(100, 50), ref _graphicsDevice);
             newLevel_Button.setText("New Level", Alignment.Center, 1, FontType.arial);
             newLevel_Button.setColor(ButtonStyle.Gray, 0.75f);
         }

@@ -7,11 +7,25 @@ using Microsoft.Xna.Framework.Graphics;
 
 public enum Alignment {
     Left,
-    Right,
     Center,
+    Right,
     Top,
     Bottom,
     Default
+}
+
+public enum ScreenPosition {
+    Center,
+    TopCenter,
+    BottomCenter,
+
+    BottomLeft,
+    MiddleLeft,
+    TopLeft,
+
+    BottomRight,
+    MiddleRight,
+    TopRight,
 }
 
 namespace Deflexion_Redux {
@@ -24,7 +38,11 @@ namespace Deflexion_Redux {
         public FontType font;
 
         public Vector2 position;
+        //private Vector2 defaultPosition;
         public Vector2 size;
+        private Vector2 defaultSize;
+        private TextureType texture = TextureType.none;
+        private Sprite sprite;
 
         private string text = "";
         private float layer;
@@ -36,7 +54,9 @@ namespace Deflexion_Redux {
 
         public Panel(Vector2 position, Vector2 size, Color color, float layer, ref GraphicsDevice device) {
             this.position = position;
+            //this.defaultPosition = position;
             this.size = size;
+            this.defaultSize = size;
             this.color = color;
             this.layer = layer;
             textColor = Color.Black;
@@ -44,6 +64,16 @@ namespace Deflexion_Redux {
             _background.SetData(new[] { color });
 
             cam = Camera.Instance;
+        }
+
+        public Panel(Vector2 position, TextureType texture, Vector2 scale, float layer) {
+            this.position = position;
+            this.texture = texture;
+            sprite = new Sprite(texture, position, 0, layer, scale, Vector2.Zero);
+        } 
+
+        public Panel(ScreenPosition relativeScreenPos, Vector2 offset, Vector2 size, Color color, float layer, ref GraphicsDevice device) : this(new Vector2(), size, color, layer, ref device) {
+            scaleScreenPosition(relativeScreenPos, offset, 1);
         }
 
         public Panel(Vector2 position, Vector2 size, Color color, float layer, ref GraphicsDevice device, string text, FontType font, Alignment alignment) : this(position, size, color, layer, ref device) {
@@ -92,6 +122,56 @@ namespace Deflexion_Redux {
                     textAdjustment = Vector2.Zero;
                     break;
             }
+        }
+
+        public void scaleScreenPosition(ScreenPosition pos, Vector2 offset, float scalar) {
+            scalePosition(pos, cam.position, cam.virtualWidth * scalar, cam.virtualHeight * scalar, offset, scalar);
+        }
+
+        public void scaleRelativePosition(Panel parentPanel, ScreenPosition pos, Vector2 offset, float scalar) {
+            Vector2 parentCenter = parentPanel.position + (parentPanel.size / 2);
+            float parentWidth = parentPanel.size.X;
+            float parentHeight = parentPanel.size.Y;
+            scalePosition(pos, parentCenter, parentWidth, parentHeight, offset, scalar);
+        }
+
+        private void scalePosition(ScreenPosition pos, Vector2 parentCenter, float parentWidth, float parentHeight, Vector2 offset, float scalar) {
+            switch (pos) {
+                case ScreenPosition.Center:
+                    position = parentCenter - (size / 2) + offset * scalar;
+                    break;
+                case ScreenPosition.TopCenter:
+                    position = parentCenter - new Vector2(size.X / 2, parentHeight / 2) + offset * scalar;
+                    break;
+                case ScreenPosition.BottomCenter:
+                    position = parentCenter - new Vector2(size.X / 2, -((parentHeight) / 2) + size.Y) + offset * scalar;
+                    break;
+                case ScreenPosition.BottomLeft:
+                    position = parentCenter - new Vector2(parentWidth / 2, (-parentHeight / 2) + size.Y) + offset * scalar;
+                    break;
+                case ScreenPosition.MiddleLeft:
+                    position = parentCenter - new Vector2(parentWidth / 2, size.Y / 2) + offset * scalar;
+                    break;
+                case ScreenPosition.TopLeft:
+                    position = parentCenter - new Vector2(parentWidth / 2, parentHeight / 2) + offset * scalar;
+                    break;
+                case ScreenPosition.BottomRight:
+                    position = parentCenter + new Vector2((parentWidth / 2) - size.X, (parentHeight / 2) - size.Y) + offset * scalar;
+                    break;
+                case ScreenPosition.MiddleRight:
+                    position = parentCenter + new Vector2((parentHeight / 2) - size.X, -size.Y / 2) + offset * scalar;
+                    break;
+                case ScreenPosition.TopRight:
+                    position = parentCenter + new Vector2((parentWidth / 2) - size.X, -parentHeight / 2) + offset * scalar;
+                    break;
+                default:
+                    Debug.Print("That Screen Position (" + pos.ToString() + ") does not exist");
+                    break;
+            }
+        }
+
+        public void scaleSize(float scalar) {
+            size = defaultSize * scalar;
         }
 
         public string getText() {

@@ -17,6 +17,8 @@ namespace Deflexion_Redux {
 
         public Vector2 sheetSize;
 
+        private Camera cam = Camera.Instance;
+
         public AnimatedSprite(TextureType textureType, Vector2 startingPosition, float rotation, int pixelWidth, float layer, Vector2 scale) {
             this.textureType = textureType;
             Position = startingPosition;
@@ -73,7 +75,7 @@ namespace Deflexion_Redux {
         }
 
         public AnimatedSprite animCopyOf() {
-            return new AnimatedSprite(textureType, Position, Rotation, pixelWidth, Layer, Scale, Origin, currentFrame, frameRate);
+            return new AnimatedSprite(textureType, Position, Rotation, pixelWidth, Layer, Scale * cam.spriteScalar, Origin, currentFrame, frameRate);
         }
     }
 }

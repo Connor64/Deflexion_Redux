@@ -3,8 +3,9 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
-using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace Deflexion_Redux {
     public class GameplayScreen : GameState {
@@ -19,6 +20,8 @@ namespace Deflexion_Redux {
 
         private Panel pausePanel;
         private Button return_Button, exit_Button;
+
+        private Effect fx;
 
         private float deltaTime = 0;
         private bool paused = false;
@@ -57,6 +60,8 @@ namespace Deflexion_Redux {
 
             background = new Background(player.position, TextureType.test_space_background);
             cam.position = player.position;
+
+            fx = AssetManager.effects[EffectType.test];
         }
 
         public override void Update(GameTime gameTime) {
@@ -73,8 +78,13 @@ namespace Deflexion_Redux {
             }
 
             if (!paused) {
-                if (!levelEditor.visible) {
+                if (Keyboard.GetState().IsKeyDown(Keys.Space)) {
+                    fx.Parameters["Percentage"].SetValue(0.5f);
+                } else {
+                    fx.Parameters["Percentage"].SetValue(0.0f);
+                }
 
+                if (!levelEditor.visible) {
                     if (player.isAlive) {
                         player.Update(deltaTime);
 
@@ -99,24 +109,35 @@ namespace Deflexion_Redux {
         }
 
         public override void UnloadContent() {
+            Debug.Print("Unloading content");
         }
-        public override void Draw(SpriteBatch spriteBatch) {
-            _graphicsDevice.Clear(Color.CornflowerBlue);
-            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend,
-                               SamplerState.PointClamp, null, null, null, cam.getMatrix() * cam.getTransformationMatrix());
 
-            levelManager.Draw(spriteBatch);
-            player.Draw(spriteBatch);
+        public override void Draw(SpriteBatch spriteBatch) {
+            List<RenderTarget2D> targets = new List<RenderTarget2D>();
+
+            // Background, Enemies, Tiles
+            effectHandler.BeginEffect(spriteBatch, ref _graphicsDevice, ref targets, EffectType.none);
             background.Draw(spriteBatch);
-            levelEditor.Draw(spriteBatch);
             enemyManager.Draw(spriteBatch);
+            levelManager.Draw(spriteBatch);
+            spriteBatch.End();
+
+            // Player w/ effect
+            effectHandler.BeginEffect(spriteBatch, ref _graphicsDevice, ref targets, EffectType.test);
+            player.Draw(spriteBatch);
+            spriteBatch.End();
+
+            // UI
+            effectHandler.BeginEffect(spriteBatch, ref _graphicsDevice, ref targets, EffectType.none);
             if (paused) {
                 pausePanel.Draw(spriteBatch);
                 return_Button.Draw(spriteBatch);
                 exit_Button.Draw(spriteBatch);
             }
-
+            levelEditor.Draw(spriteBatch);
             spriteBatch.End();
+
+            effectHandler.DrawTargets(spriteBatch, ref targets);
         }
 
         void bulletUpdate(List<Bullet> bullets, out List<Bullet> outBullets) {

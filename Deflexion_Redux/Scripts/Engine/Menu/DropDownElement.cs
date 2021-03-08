@@ -8,8 +8,6 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Deflexion_Redux {
     class DropDownElement {
-        public Vector2 position;
-        private Vector2 size;
         public Vector2 padding = new Vector2(8, 8);
 
         public bool selected = false;
@@ -20,9 +18,6 @@ namespace Deflexion_Redux {
         public Panel panel;
 
         public DropDownElement(string text, Vector2 position, Vector2 size, FontType font, ref GraphicsDevice device) {
-            this.position = position;
-            this.size = size;
-
             panel = new Panel(position, size, Color.White, Sprite.Layers[LayerType.UI] - 0.01f, ref device, text, font, Alignment.Left);
         }
 
@@ -45,15 +40,32 @@ namespace Deflexion_Redux {
             return panel.getText();
         }
 
-        public void setSize(Vector2 size, float textScale) {
-            panel.size = size;
-            panel.setText(panel.getText(), Alignment.Default, textScale);
-            this.size = size;
+        public void scaleScreenPosition(ScreenPosition spot, Vector2 offset, float scalar) {
+            panel.scaleScreenPosition(spot, offset, scalar);
+        }
+
+        public void scaleRelativePosition(Panel parentPanel, ScreenPosition pos, Vector2 offset, float scalar) {
+            panel.scaleRelativePosition(parentPanel, pos, offset, scalar);
+        }
+
+        public void scaleSize(float scalar) {
+            panel.scaleSize(scalar);
         }
 
         public void setPosition(Vector2 position) {
-            this.position = position;
             panel.position = position;
+        }
+
+        public Vector2 getPosition() {
+            return panel.position;
+        }
+
+        public void setSize(Vector2 size) {
+            panel.size = size;
+        }
+
+        public Vector2 getSize() {
+            return panel.size;
         }
 
         public void Draw(SpriteBatch spriteBatch) {

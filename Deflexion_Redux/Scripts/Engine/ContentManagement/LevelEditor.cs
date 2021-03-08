@@ -11,7 +11,8 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Deflexion_Redux {
     public class LevelEditor {
-        private Panel panel;
+        private Panel tilePanel;
+        private Panel enemyPanel;
         private Panel canvas;
         private DropDownContainer dropdown;
         private Button button_size_up, button_size_down;
@@ -66,11 +67,12 @@ namespace Deflexion_Redux {
 
             tile_pallette = new List<AnimatedSprite>();
 
-            canvas = new Panel(new Vector2(levelManager.tiles.GetLength(0), levelManager.tiles.GetLength(1)) * -tileSize/2, new Vector2(levelManager.tiles.GetLength(0), levelManager.tiles.GetLength(1)) * tileSize, Color.Red * 0.5f, Sprite.Layers[LayerType.Canvas], ref device);
-            panel = new Panel(cam.position + new Vector2(cam.virtualWidth / 2 - 130, -cam.virtualHeight / 2), new Vector2(cam.virtualWidth / 4, cam.virtualHeight), Color.Gray, Sprite.Layers[LayerType.UI], ref device);
-            dropdown = new DropDownContainer(panel.position, new Vector2(100, 20), FontType.arial, new List<string>(tilesets.Keys), ref device);
-            button_size_up = new Button(delegate() { ChangeLevelSize(10, 10); }, dropdown.position + new Vector2(0, 200), new Vector2(50, 30), ref device, Color.White, "+10", FontType.arial);
-            button_size_down = new Button(delegate () { ChangeLevelSize(-10, -10); }, dropdown.position + new Vector2(0, 200), new Vector2(50, 30), ref device, Color.White, "-10", FontType.arial);
+            canvas = new Panel(new Vector2(levelManager.tiles.GetLength(0), levelManager.tiles.GetLength(1)) * -tileSize/2, new Vector2(levelManager.tiles.GetLength(0), levelManager.tiles.GetLength(1)) * tileSize, Color.White * 0.35f, Sprite.Layers[LayerType.Canvas], ref device);
+            tilePanel = new Panel(ScreenPosition.TopRight, Vector2.Zero, new Vector2(cam.virtualWidth / 4, cam.virtualHeight), Color.Gray, Sprite.Layers[LayerType.UI], ref device);
+            enemyPanel = new Panel(ScreenPosition.BottomLeft, Vector2.Zero, new Vector2(cam.virtualWidth, cam.virtualHeight / 5.4f), Color.LightGray, Sprite.Layers[LayerType.UI] + 0.01f, ref device);
+            dropdown = new DropDownContainer(tilePanel.position, new Vector2(100, 20), FontType.arial, new List<string>(tilesets.Keys), ref device);
+            button_size_up = new Button(delegate() { ChangeLevelSize(10, 10); }, dropdown.getPosition() + new Vector2(0, 200), new Vector2(50, 30), ref device, Color.White, "+10", FontType.arial);
+            button_size_down = new Button(delegate () { ChangeLevelSize(-10, -10); }, dropdown.getPosition() + new Vector2(0, 200), new Vector2(50, 30), ref device, Color.White, "-10", FontType.arial);
         }
 
         // Always called
@@ -110,14 +112,14 @@ namespace Deflexion_Redux {
             KeyboardState kState = Keyboard.GetState();
 
             if (kState.IsKeyDown(Keys.W)) {
-                cam.position.Y -= 5;
+                cam.position.Y -= 5 / cam.zoom;
             } else if (kState.IsKeyDown(Keys.S)) {
-                cam.position.Y += 5;
+                cam.position.Y += 5/ cam.zoom;
             }
             if (kState.IsKeyDown(Keys.A)) {
-                cam.position.X -= 5;
+                cam.position.X -= 5 / cam.zoom;
             } else if (kState.IsKeyDown(Keys.D)) {
-                cam.position.X += 5;
+                cam.position.X += 5 / cam.zoom;
             }
 
 
@@ -134,13 +136,15 @@ namespace Deflexion_Redux {
         }
 
         public void ScaleUI() {
-            panel.size.X = (cam.virtualWidth / cam.zoom) / 4;
-            panel.size.Y = cam.virtualHeight / cam.zoom;
-            dropdown.setSize(new Vector2(100, 20) / cam.zoom, 1 / cam.zoom);
-            button_size_up.setSize(new Vector2(50, 30) / cam.zoom, 1 / cam.zoom);
-            button_size_down.setSize(button_size_up.size, 1 / cam.zoom);
+            float scalar = 1 / cam.zoom;
 
-            tileScale = TILE_SCALE / cam.zoom;
+            tilePanel.scaleSize(scalar);
+            enemyPanel.scaleSize(scalar);
+            dropdown.scaleSize(scalar);
+            button_size_up.scaleSize(scalar);
+            button_size_down.scaleSize(scalar);
+
+            tileScale = TILE_SCALE * scalar;
 
             foreach(AnimatedSprite tile in tile_pallette) {
                 tile.setScale(new Vector2(tileScale, tileScale));
@@ -148,17 +152,20 @@ namespace Deflexion_Redux {
         }
 
         public void MoveUI() {
-            panel.position = cam.position + new Vector2((cam.virtualWidth / cam.zoom) / 4, (-cam.virtualHeight / cam.zoom) / 2);
-            dropdown.setPosition(panel.position + new Vector2((panel.size.X - dropdown.size.X) / 2, 400 / cam.zoom));
-            button_size_up.setPosition(panel.position + new Vector2((panel.size.X - button_size_up.size.X) / 1.5f, 300 / cam.zoom));
-            button_size_down.setPosition(panel.position + new Vector2((panel.size.X - button_size_up.size.X) / 3, 300 / cam.zoom));
+            float scalar = 1 / cam.zoom;
+
+            tilePanel.scaleScreenPosition(ScreenPosition.TopRight, Vector2.Zero, scalar);
+            enemyPanel.scaleScreenPosition(ScreenPosition.BottomLeft, Vector2.Zero, scalar);
+            dropdown.scaleRelativePosition(tilePanel, ScreenPosition.BottomCenter, new Vector2(0, -100), scalar);
+            button_size_up.scaleRelativePosition(tilePanel, ScreenPosition.Center, new Vector2(35, 50), scalar);
+            button_size_down.scaleRelativePosition(tilePanel, ScreenPosition.Center, new Vector2(-35, 50), scalar);
 
             canvas.position = new Vector2(levelManager.tiles.GetLength(0), levelManager.tiles.GetLength(1)) * -tileSize / 2;
             canvas.size = new Vector2(levelManager.tiles.GetLength(0), levelManager.tiles.GetLength(1)) * tileSize;
 
             float x = 0, y = 0;
             for (int i = 0; i < tile_pallette.Count; i++) {
-                tile_pallette[i].Position = panel.position + new Vector2((panel.size.X - tile_pallette[i].sheetSize.X) / 2 + x, panel.size.Y / 5 + y);
+                tile_pallette[i].Position = tilePanel.position + new Vector2((tilePanel.size.X - tile_pallette[i].sheetSize.X) / 2 + x, tilePanel.size.Y / 5 + y);
 
                 if (tile_pallette[i].isHovering(tileScale) && Mouse.GetState().LeftButton == ButtonState.Pressed) {
                     selected = true;
@@ -175,9 +182,7 @@ namespace Deflexion_Redux {
         }
 
         public void SaveLayout() {
-            //string path = Path.Combine("Content", "testLevel.lvl");
             string path = Path.Combine(directory, "testLevel2.xml");
-            //string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "testLevel.xml");
             XmlManager.Save<Level>(@path, new Level(levelManager.tiles));
         }
 
@@ -188,12 +193,12 @@ namespace Deflexion_Redux {
             int x = (int)selectedTile.Position.X / tileSize + levelManager.tiles.GetLength(0) / 2;
             int y = (int)selectedTile.Position.Y / tileSize + levelManager.tiles.GetLength(1) / 2;
 
-            if (Mouse.GetState().LeftButton == ButtonState.Pressed && !panel.isHovering() && x >= 0 && x < levelManager.tiles.GetLength(0) && y >= 0 && y < levelManager.tiles.GetLength(1)) {
+            if (Mouse.GetState().LeftButton == ButtonState.Pressed && !tilePanel.isHovering() && x >= 0 && x < levelManager.tiles.GetLength(0) && y >= 0 && y < levelManager.tiles.GetLength(1)) {
                 levelManager.tiles[x, y] = new Tile(tilesets[dropdown.getText()], selectedTile.Position, true, Sprite.Layers[LayerType.Tiles], tileSize, selectedTile.currentFrame);
             }
 
             if (Mouse.GetState().RightButton == ButtonState.Pressed && x >= 0 && x < levelManager.tiles.GetLength(0) && y >= 0 && y < levelManager.tiles.GetLength(1)) {
-                if (!panel.isHovering()) {
+                if (!tilePanel.isHovering()) {
                     levelManager.tiles[x, y] = new Tile();
                 }
             }
@@ -207,11 +212,11 @@ namespace Deflexion_Redux {
 
             for (int y = 0; y < heightCount; y++) {
                 for (int x = 0; x < widthCount; x++) {
-                    tile_pallette.Add(new AnimatedSprite(tilesets[dropdown.getText()], dropdown.position + new Vector2(dropdown.size.X / 2, -300), 0, tileSize, Sprite.Layers[LayerType.UI] - 0.01f, new Vector2(tileScale, tileScale), Vector2.Zero, x + (y * heightCount)));
+                    tile_pallette.Add(new AnimatedSprite(tilesets[dropdown.getText()], dropdown.getPosition() + new Vector2(dropdown.getSize().X / 2, -300), 0, tileSize, Sprite.Layers[LayerType.UI] - 0.01f, new Vector2(tileScale, tileScale), Vector2.Zero, x + (y * heightCount)));
                 }
             }
 
-            while (AssetManager.textures[tilesets[dropdown.getText()]].Width * tileScale > panel.size.X && tileScale > 0.5f) {
+            while (AssetManager.textures[tilesets[dropdown.getText()]].Width * tileScale > tilePanel.size.X && tileScale > 0.5f) {
                 tileScale -= 0.5f;
             }
         }
@@ -236,10 +241,11 @@ namespace Deflexion_Redux {
         public void Draw(SpriteBatch spriteBatch) {
             if (visible) {
                 canvas.Draw(spriteBatch);
-                panel.Draw(spriteBatch);
+                tilePanel.Draw(spriteBatch);
                 dropdown.Draw(spriteBatch);
                 button_size_up.Draw(spriteBatch);
                 button_size_down.Draw(spriteBatch);
+                enemyPanel.Draw(spriteBatch);
 
                 foreach (AnimatedSprite tile in tile_pallette) {
                     tile.animDraw(spriteBatch);

@@ -9,21 +9,12 @@ using Microsoft.Xna.Framework.Input;
 namespace Deflexion_Redux {
     class DropDownContainer {
         private List<DropDownElement> elements;
-
-        public Vector2 position;
-        public Vector2 size;
+        private Panel panel;
+        private MouseState M_oldState;
 
         public bool dropped = false;
 
-        private Panel panel;
-        private MouseState M_oldState;
-        private Camera cam;
-
-
         public DropDownContainer(Vector2 position, Vector2 size, FontType font, List<string> elementText, ref GraphicsDevice device) {
-            this.position = position;
-            this.size = size;
-            cam = Camera.Instance;
 
             elements = new List<DropDownElement>();
             for (int i = 0; i < elementText.Count; i++) {
@@ -37,13 +28,11 @@ namespace Deflexion_Redux {
 
         public void Update() {
             if (panel.isHovering() && Mouse.GetState().LeftButton == ButtonState.Pressed && M_oldState.LeftButton != ButtonState.Pressed) {
-                dropdown();
+                drop();
             }
 
             if (dropped) {
                 for (int i = 0; i < elements.Count; i++) {
-                    //elements[i].position = position + new Vector2(0, size.Y * (i + 1));
-                    //elements[i].setSize(size);
                     elements[i].action();
                     if (elements[i].selected) {
                         setText(elements[i].getText(), panel.textScale);
@@ -58,16 +47,12 @@ namespace Deflexion_Redux {
             M_oldState = Mouse.GetState();
         }
 
-        public void dropdown() {
+        public void drop() {
             dropped = !dropped;
 
             foreach (DropDownElement element in elements) {
                 element.visible = dropped;
             }
-        }
-
-        public string getText() {
-            return panel.getText();
         }
 
         public void setText(string newText, float scale) {
@@ -77,22 +62,53 @@ namespace Deflexion_Redux {
                 element.setText(element.getText(), scale);
             }
         }
+        public string getText() {
+            return panel.getText();
+        }
 
-        public void setSize(Vector2 size, float textScale) {
-            panel.size = size;
-            panel.setText(panel.getText(), Alignment.Center, textScale);
-            this.size = size;
-            foreach(DropDownElement element in elements) {
-                element.setSize(size, textScale);
+        public void scaleScreenPosition(ScreenPosition pos, Vector2 offset, float scalar) {
+            panel.scaleScreenPosition(pos, offset, scalar);
+            for (int i = 0; i < elements.Count; i++) {
+                elements[i].scaleScreenPosition(pos, offset + new Vector2(0, panel.size.Y * (i + 1)), scalar);
             }
         }
 
+        public void scaleRelativePosition(Panel parentPanel, ScreenPosition pos, Vector2 offset, float scalar) {
+            panel.scaleRelativePosition(parentPanel, pos, offset, scalar);
+            for (int i = 0; i < elements.Count; i++) {
+                elements[i].scaleRelativePosition(panel, ScreenPosition.BottomCenter, new Vector2(0, panel.size.Y * (i + 1)), 1);
+            }
+        }
+
+        public void scaleSize(float scalar) {
+            panel.scaleSize(scalar);
+            panel.setText(panel.getText(), Alignment.Center, scalar);
+            foreach (DropDownElement element in elements) {
+                element.scaleSize(scalar);
+                element.setText(element.getText(), scalar);
+            }
+        }
+
+        public void setSize(Vector2 size) {
+            panel.size = size;
+            foreach(DropDownElement element in elements) {
+                element.setSize(size);
+            }
+        }
+
+        public Vector2 getSize() {
+            return panel.size;
+        }
+
         public void setPosition(Vector2 position) {
-            this.position = position;
             panel.position = position;
             for (int i = 0; i < elements.Count; i++) {
-                elements[i].setPosition(position + new Vector2(0, size.Y * (i + 1)));
+                elements[i].setPosition(position + new Vector2(0, panel.size.Y * (i + 1)));
             }
+        }
+
+        public Vector2 getPosition() {
+            return panel.position;
         }
 
         public void Draw(SpriteBatch spriteBatch) {

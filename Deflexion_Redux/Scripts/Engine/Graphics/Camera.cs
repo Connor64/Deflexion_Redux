@@ -23,7 +23,7 @@ namespace Deflexion_Redux {
         public bool isFullscreen;
         public Vector2 position = Vector2.Zero;           
         public float zoom = 1;
-        public GraphicsDeviceManager device;
+        public GraphicsDeviceManager deviceManager;
 
         public int virtualViewportX;
         public int virtualViewportY;
@@ -36,10 +36,12 @@ namespace Deflexion_Redux {
         private Matrix scaleMatrix;
         private bool dirtyMatrix = true;
 
-        public void Initialize(ref GraphicsDeviceManager device) {
-            _Width = device.PreferredBackBufferWidth;
-            _Height = device.PreferredBackBufferHeight;
-            this.device = device;
+        public float spriteScalar;
+
+        public void Initialize(ref GraphicsDeviceManager deviceManager) {
+            _Width = deviceManager.PreferredBackBufferWidth;
+            _Height = deviceManager.PreferredBackBufferHeight;
+            this.deviceManager = deviceManager;
             dirtyMatrix = true;
             ApplyResolutionChanges();
         }
@@ -81,6 +83,8 @@ namespace Deflexion_Redux {
             virtualWidth = Width;
             virtualHeight = Height;
             dirtyMatrix = true;
+
+            spriteScalar = (float)virtualHeight / 540f;
         }
 
         public void SetResolution(int Width, int Height, bool fullScreen) {
@@ -96,25 +100,25 @@ namespace Deflexion_Redux {
         private void ApplyResolutionChanges() {
             if (!isFullscreen) {
                 if ((_Width <= GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width) && (_Height <= GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height)) {
-                    device.PreferredBackBufferWidth = _Width;
-                    device.PreferredBackBufferHeight = _Height;
-                    device.IsFullScreen = false;
-                    device.ApplyChanges();
+                    deviceManager.PreferredBackBufferWidth = _Width;
+                    deviceManager.PreferredBackBufferHeight = _Height;
+                    deviceManager.IsFullScreen = false;
+                    deviceManager.ApplyChanges();
                 }
             } else {
                 foreach(DisplayMode dm in GraphicsAdapter.DefaultAdapter.SupportedDisplayModes) {
                     if ((dm.Width == _Width) && (dm.Height == _Height)) {
-                        device.PreferredBackBufferWidth = _Width;
-                        device.PreferredBackBufferHeight = _Height;
-                        device.IsFullScreen = true;
-                        device.ApplyChanges();
+                        deviceManager.PreferredBackBufferWidth = _Width;
+                        deviceManager.PreferredBackBufferHeight = _Height;
+                        deviceManager.IsFullScreen = true;
+                        deviceManager.ApplyChanges();
                     }
                 }
             }
 
             dirtyMatrix = true;
-            _Width = device.PreferredBackBufferWidth;
-            _Height = device.PreferredBackBufferHeight;
+            _Width = deviceManager.PreferredBackBufferWidth;
+            _Height = deviceManager.PreferredBackBufferHeight;
          }
 
         public Matrix getTransformationMatrix() {
@@ -126,7 +130,7 @@ namespace Deflexion_Redux {
 
         public void RecreateScaleMatrix() {
             dirtyMatrix = false;
-            scaleMatrix = Matrix.CreateScale((float)device.GraphicsDevice.Viewport.Width / virtualWidth, (float)device.GraphicsDevice.Viewport.Height / virtualHeight, 1f);
+            scaleMatrix = Matrix.CreateScale((float)deviceManager.GraphicsDevice.Viewport.Width / virtualWidth, (float)deviceManager.GraphicsDevice.Viewport.Height / virtualHeight, 1f);
         }
 
         public void FullViewport() {
@@ -135,25 +139,25 @@ namespace Deflexion_Redux {
             vp.Y = 0;
             vp.Width = _Width;
             vp.Height = _Height;
-            device.GraphicsDevice.Viewport = vp;
+            deviceManager.GraphicsDevice.Viewport = vp;
         }
 
         public void ResetViewPort() {
             float targetAspectRatio = (float)virtualWidth / (float)virtualHeight;
 
-            int width = device.PreferredBackBufferWidth;
+            int width = deviceManager.PreferredBackBufferWidth;
             int height = (int)(width / targetAspectRatio + 0.5f); // I'm not sure why there's a 0.5f
             bool changed = false;
 
-            if (height != device.PreferredBackBufferHeight) {
-                height = device.PreferredBackBufferHeight; // Pillarbox
+            if (height != deviceManager.PreferredBackBufferHeight) {
+                height = deviceManager.PreferredBackBufferHeight; // Pillarbox
                 width = (int)(height * targetAspectRatio + 0.5f);
                 changed = true;
             }
 
             Viewport viewport = new Viewport();
-            viewport.X = (device.PreferredBackBufferWidth / 2) - (width / 2);
-            viewport.Y = (device.PreferredBackBufferHeight / 2) - (height / 2);
+            viewport.X = (deviceManager.PreferredBackBufferWidth / 2) - (width / 2);
+            viewport.Y = (deviceManager.PreferredBackBufferHeight / 2) - (height / 2);
             virtualViewportX = viewport.X;
             virtualViewportY = viewport.Y;
             viewport.Width = width;
@@ -166,17 +170,17 @@ namespace Deflexion_Redux {
                 dirtyMatrix = true;
             }
 
-            device.GraphicsDevice.Viewport = viewport;
+            deviceManager.GraphicsDevice.Viewport = viewport;
         }
 
         public void BeginDraw() {
             FullViewport();
 
-            device.GraphicsDevice.Clear(Color.Black);
+            deviceManager.GraphicsDevice.Clear(Color.Black);
 
             ResetViewPort();
 
-            device.GraphicsDevice.Clear(Color.CornflowerBlue);
+            deviceManager.GraphicsDevice.Clear(Color.CornflowerBlue);
         }
     }
 }

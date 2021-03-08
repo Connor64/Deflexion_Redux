@@ -32,6 +32,8 @@ namespace Deflexion_Redux {
         editor_test_3,
 
         deflexion_logo,
+
+        none,
     }
 
     public enum FontType {
@@ -48,12 +50,18 @@ namespace Deflexion_Redux {
         test_song_body,
     }
 
+    public enum EffectType {
+        none,
+        test,
+    }
+
     public class AssetManager {
 
         public static Dictionary<TextureType, Texture2D> textures = new Dictionary<TextureType, Texture2D>();
         public static Dictionary<FontType, SpriteFont> fonts = new Dictionary<FontType, SpriteFont>();
         public static Dictionary<LevelType, Level> levels = new Dictionary<LevelType, Level>();
         public static Dictionary<SoundType, SoundEffect> sounds = new Dictionary<SoundType, SoundEffect>();
+        public static Dictionary<EffectType, Effect> effects = new Dictionary<EffectType, Effect>();
 
         public static void LoadTextures(ContentManager content) {
             
@@ -90,6 +98,23 @@ namespace Deflexion_Redux {
             // Sounds
             sounds.Add(SoundType.test_song_intro, content.Load<SoundEffect>("Audio/Xyralon (Intro)"));
             sounds.Add(SoundType.test_song_body, content.Load<SoundEffect>("Audio/Xyralon (Body)"));
+
+            // Effects
+            effects.Add(EffectType.test, content.Load<Effect>("Effects/test_effect"));
         }
+
+        //public static void loadTexture(TextureType texture) {
+        //    if (!textures.ContainsKey(texture)) {
+        //        switch (texture) {
+        //            case TextureType.
+        //        }
+        //    }
+        //}
+
+        //public static void LoadTextures_Player(ContentManager content) {
+        //    textures.Add(TextureType.player_bottom, content.Load<Texture2D>("Sprites/test_ship_bottom"));
+        //    textures.Add(TextureType.player_shield, content.Load<Texture2D>("Sprites/test_shield_2"));
+        //    textures.Add(TextureType.player_gun, content.Load<Texture2D>("Sprites/test_ship_top"));
+        //}
     }
 }

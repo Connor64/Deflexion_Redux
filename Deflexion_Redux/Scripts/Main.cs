@@ -43,6 +43,7 @@ namespace Deflexion_Redux {
 
             gameStateManager.setContent(Content);
             gameStateManager.AddScreen(new TitleScreen(GraphicsDevice));
+            //gameStateManager.AddScreen(new GameplayScreen(GraphicsDevice, LevelType.new_level));
         }
 
         protected override void UnloadContent() {

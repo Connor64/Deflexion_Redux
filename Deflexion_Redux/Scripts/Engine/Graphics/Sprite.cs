@@ -71,7 +71,7 @@ namespace Deflexion_Redux {
         protected Sprite() {}
 
         public void Draw(SpriteBatch spriteBatch) {
-            spriteBatch.Draw(AssetManager.textures[textureType], Position, new Rectangle(0, 0, width, height), Color.White, Rotation, Origin, Scale, SpriteEffects.None, Layer);
+            spriteBatch.Draw(AssetManager.textures[textureType], Position, new Rectangle(0, 0, width, height), Color.White, Rotation, Origin, Scale * cam.spriteScalar, SpriteEffects.None, Layer);
         }
     }
 }
