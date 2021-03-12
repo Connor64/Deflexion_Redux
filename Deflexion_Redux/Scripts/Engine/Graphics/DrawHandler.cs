@@ -5,13 +5,13 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Deflexion_Redux {
-    public class EffectHandler {
+    public class DrawHandler {
 
-        private static EffectHandler instance;
-        public static EffectHandler Instance {
+        private static DrawHandler instance;
+        public static DrawHandler Instance {
             get {
                 if (instance == null) {
-                    instance = new EffectHandler();
+                    instance = new DrawHandler();
                 }
                 return instance;
             }
@@ -24,12 +24,16 @@ namespace Deflexion_Redux {
             spriteBatch.GraphicsDevice.SetRenderTarget(target);
             spriteBatch.GraphicsDevice.Clear(new Color(0, 0, 0, 0));
             if (effect == EffectType.none) {
-                spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, null, null, cam.getMatrix() * cam.getTransformationMatrix());
+                spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, null, null, cam.getScaleMatrix() * cam.getTranslationMatrix() * cam.getTransformationMatrix());
             } else {
-                spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, null, AssetManager.effects[effect], cam.getMatrix() * cam.getTransformationMatrix());
+                spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, null, AssetManager.effects[effect], cam.getScaleMatrix() * cam.getTranslationMatrix() * cam.getTransformationMatrix());
             }
 
             targets.Add(target);
+        }
+
+        public void DrawUI(SpriteBatch spriteBatch) {
+            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, cam.getTransformationMatrix());
         }
 
         public void DrawTargets(SpriteBatch spriteBatch, ref List<RenderTarget2D> targets) {
@@ -44,6 +48,10 @@ namespace Deflexion_Redux {
                 target.Dispose();
             }
             targets.Clear();
+        }
+
+        public void DrawTexture(SpriteBatch spriteBatch, TextureType texture, Vector2 position, Vector2 scale, Vector2 origin) {
+            spriteBatch.Draw(AssetManager.textures[texture], position, new Rectangle(0, 0, AssetManager.textures[texture].Width, AssetManager.textures[texture].Height), Color.White, 0, origin, scale * cam.scalar, SpriteEffects.None, 0);
         }
     }
 }

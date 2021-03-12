@@ -9,10 +9,12 @@ namespace Deflexion_Redux {
     class Turret : Enemy {
         private Sprite baseSprite;
         private Sprite gunSprite;
-        
 
         public Turret(Vector2 position) {
+            mainTexture = TextureType.turret_bottom;
+
             bodyType = BodyType.Enemy;
+            startingPosition = position;
             this.position = position;
             screenTolerance = new Vector2(128, 128);
 
@@ -24,7 +26,7 @@ namespace Deflexion_Redux {
         }
 
         public override void Update(Vector2 playerPosition, float deltaTime) {
-            if (cam.contains(position, screenTolerance)) {
+            if (Camera.Instance.contains(position, screenTolerance)) {
                 Attack(deltaTime);
                 followPlayer(playerPosition);
             }
@@ -33,7 +35,7 @@ namespace Deflexion_Redux {
         public override void Attack(float deltaTime) {
             elapsedTime += deltaTime;
             if (elapsedTime >= 3f) {
-                enemyManager.enemyBullets.Add(new Bullet(TextureType.test_enemy_blast, position, 400, gunSprite.Rotation, 1));
+                EnemyManager.Instance.enemyBullets.Add(new Bullet(TextureType.test_enemy_blast, position, 400, gunSprite.Rotation, 1));
                 elapsedTime = 0;
             }
         }

@@ -36,7 +36,7 @@ namespace Deflexion_Redux {
         private Matrix scaleMatrix;
         private bool dirtyMatrix = true;
 
-        public float spriteScalar;
+        public float scalar;
 
         public void Initialize(ref GraphicsDeviceManager deviceManager) {
             _Width = deviceManager.PreferredBackBufferWidth;
@@ -51,7 +51,7 @@ namespace Deflexion_Redux {
             position = targetPosition;
         }
 
-        public Vector2 getMousePosition() {
+        public Vector2 getMousePosition(bool scaled) {
             Vector2 mousePosition;
             mousePosition.X = Mouse.GetState().X;
             mousePosition.Y = Mouse.GetState().Y;
@@ -59,17 +59,24 @@ namespace Deflexion_Redux {
             mousePosition.Y -= virtualViewportY;
 
             Vector2 screenPosition = Vector2.Transform(mousePosition, Matrix.Invert(getTransformationMatrix()));
-            Vector2 worldPosition = Vector2.Transform(screenPosition, Matrix.Invert(getMatrix()));
+            if (scaled) {
+                Vector2 worldPosition = Vector2.Transform(screenPosition, Matrix.Invert(getTranslationMatrix()));
+                return worldPosition / zoom;
+            } else {
+                return screenPosition;
+            }
 
-            return worldPosition;
         }
 
-        public Matrix getMatrix() {
+        public Matrix getTranslationMatrix() {
             Matrix translationMatrix = Matrix.CreateTranslation(new Vector3(-position.X, -position.Y, 0)); // Set position values to negative or else increasing will go left/up instead of right/down
-            Matrix scaleMatrix = Matrix.CreateScale(zoom);
             Matrix virtualTranslationMatrix = Matrix.CreateTranslation(new Vector3(virtualWidth * 0.5f, virtualHeight * 0.5f, 0)); // Centers camera
 
-            return translationMatrix * scaleMatrix * virtualTranslationMatrix;
+            return translationMatrix * virtualTranslationMatrix;
+        }
+
+        public Matrix getScaleMatrix() {
+            return Matrix.CreateScale(zoom);
         }
 
         public bool contains(Vector2 objPosition, Vector2 tolerance) {
@@ -84,7 +91,8 @@ namespace Deflexion_Redux {
             virtualHeight = Height;
             dirtyMatrix = true;
 
-            spriteScalar = (float)virtualHeight / 540f;
+            scalar = (float)virtualHeight / 540f;
+            //spriteScalar = 1;
         }
 
         public void SetResolution(int Width, int Height, bool fullScreen) {

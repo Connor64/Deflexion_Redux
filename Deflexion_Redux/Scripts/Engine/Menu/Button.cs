@@ -42,8 +42,14 @@ namespace Deflexion_Redux {
             panel = new Panel(pos, offset, size, color, Sprite.Layers[LayerType.UI] - 0.01f, ref device);
         }
 
+        public Button(Action action, ScreenPosition pos, Vector2 offset, Vector2 size, ref GraphicsDevice device, Color color, TextureType texture) {
+            this.action = action;
+            panel = new Panel(pos, offset, size, color, Sprite.Layers[LayerType.UI] - 0.01f, texture, ref device);
+            mState_OLD = Mouse.GetState();
+        }
+
         public void Update() {
-            if (panel.isHovering()){
+            if (panel.isHovering(false)){
                 panel.changeColor(hoverColor);
                 if (Mouse.GetState().LeftButton == ButtonState.Pressed) {
                     if (mState_OLD.LeftButton != ButtonState.Pressed) {
@@ -89,12 +95,12 @@ namespace Deflexion_Redux {
             panel.setText(text, alignment, textScale);
         }
 
-        public void scaleScreenPosition(ScreenPosition pos, Vector2 offset, float scalar) {
-            panel.scaleScreenPosition(pos, offset, scalar);
+        public void setScreenPosition(ScreenPosition pos, Vector2 offset, float scalar) {
+            panel.setScreenPosition(pos, offset, scalar);
         }
 
-        public void scaleRelativePosition(Panel parentPanel, ScreenPosition pos, Vector2 offset, float scalar) {
-            panel.scaleRelativePosition(parentPanel, pos, offset, scalar);
+        public void setRelativePosition(Panel parentPanel, ScreenPosition pos, Vector2 offset, float scalar) {
+            panel.setRelativePosition(parentPanel, pos, offset, scalar);
         }
 
         public void scaleSize(float scalar) {

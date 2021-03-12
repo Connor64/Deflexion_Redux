@@ -8,8 +8,10 @@ using Microsoft.Xna.Framework.Audio;
 namespace Deflexion_Redux {
     public class AudioManager {
         private Dictionary<SoundType, SoundEffectInstance> sounds = new Dictionary<SoundType, SoundEffectInstance>();
-
         private List<SoundEffectInstance[]> songs = new List<SoundEffectInstance[]>();
+
+        public bool mute = false;
+        private float masterVolume = 0;
 
         private static AudioManager instance;
         public static AudioManager Instance {
@@ -28,10 +30,16 @@ namespace Deflexion_Redux {
                     songPair[1].Play();
                 }
             }
+            if (mute) {
+                SoundEffect.MasterVolume = 0;
+            } else {
+                SoundEffect.MasterVolume = masterVolume;
+            }
         }
 
         public void setVolume(float volume) {
             SoundEffect.MasterVolume = volume;
+            masterVolume = volume;
         }
 
         public void playSound(SoundType sound, bool loop, float volume) {

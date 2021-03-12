@@ -27,7 +27,7 @@ namespace Deflexion_Redux {
         }
 
         public void Update() {
-            if (panel.isHovering() && Mouse.GetState().LeftButton == ButtonState.Pressed && M_oldState.LeftButton != ButtonState.Pressed) {
+            if (panel.isHovering(false) && Mouse.GetState().LeftButton == ButtonState.Pressed && M_oldState.LeftButton != ButtonState.Pressed) {
                 drop();
             }
 
@@ -41,7 +41,7 @@ namespace Deflexion_Redux {
                     }
                 }
             }
-            if (dropped && Mouse.GetState().LeftButton == ButtonState.Pressed && !panel.isHovering()) {
+            if (dropped && Mouse.GetState().LeftButton == ButtonState.Pressed && !panel.isHovering(false)) {
                 dropped = false;
             }
             M_oldState = Mouse.GetState();
@@ -66,15 +66,15 @@ namespace Deflexion_Redux {
             return panel.getText();
         }
 
-        public void scaleScreenPosition(ScreenPosition pos, Vector2 offset, float scalar) {
-            panel.scaleScreenPosition(pos, offset, scalar);
+        public void setScreenPosition(ScreenPosition pos, Vector2 offset, float scalar) {
+            panel.setScreenPosition(pos, offset, scalar);
             for (int i = 0; i < elements.Count; i++) {
                 elements[i].scaleScreenPosition(pos, offset + new Vector2(0, panel.size.Y * (i + 1)), scalar);
             }
         }
 
-        public void scaleRelativePosition(Panel parentPanel, ScreenPosition pos, Vector2 offset, float scalar) {
-            panel.scaleRelativePosition(parentPanel, pos, offset, scalar);
+        public void setRelativePosition(Panel parentPanel, ScreenPosition pos, Vector2 offset, float scalar) {
+            panel.setRelativePosition(parentPanel, pos, offset, scalar);
             for (int i = 0; i < elements.Count; i++) {
                 elements[i].scaleRelativePosition(panel, ScreenPosition.BottomCenter, new Vector2(0, panel.size.Y * (i + 1)), 1);
             }

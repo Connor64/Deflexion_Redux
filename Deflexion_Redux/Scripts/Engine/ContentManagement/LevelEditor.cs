@@ -15,27 +15,40 @@ namespace Deflexion_Redux {
         private Panel enemyPanel;
         private Panel canvas;
         private DropDownContainer dropdown;
-        private Button button_size_up, button_size_down;
         private string dropdownText = "";
+        private Button button_size_up, button_size_down;
+        private Button[] enemyButtons;
 
         public bool visible = false;
 
-        private int tileSize = 16;
+        private readonly int tileSize = 16;
         private readonly float TILE_SCALE = 2;
-        private float scrollValue_OLD = 0;
         private float tileScale;
+        private float scrollValue_OLD = 0;
 
         private List<AnimatedSprite> tile_pallette;
         private Dictionary<string, TextureType> tilesets = new Dictionary<string, TextureType>();
 
-        private TextureType[] keys = new TextureType[] {
+
+        private readonly TextureType[] keys = new TextureType[] {
             TextureType.test_tile,
             TextureType.editor_test_1,
             TextureType.editor_test_2,
             TextureType.editor_test_3,
+            TextureType.alpha_tiles,
         };
 
-        private bool selected = false;
+        private readonly Dictionary<EnemyType, TextureType> enemyTypes = new Dictionary<EnemyType, TextureType>() {
+            { EnemyType.Turret, TextureType.turret_bottom },
+            { EnemyType.Drone, TextureType.test_drone }
+        };
+
+
+        private bool enemyIsSelected = false;
+        private Sprite selectedEnemy;
+        private TextureType enemyTexture;
+
+        private bool tileIsSelected = false;
         private AnimatedSprite selectedTile;
 
         private Camera cam = Camera.Instance;
@@ -55,24 +68,47 @@ namespace Deflexion_Redux {
         }
 
         public void Load(string directory, ref GraphicsDevice device, string folder) {
+            kState_OLD = Keyboard.GetState();
+
+            tile_pallette = new List<AnimatedSprite>();
             tilesets.Clear();
+            this.directory = directory;
 
             tileScale = TILE_SCALE;
-            this.directory = directory;
-            kState_OLD = Keyboard.GetState();
 
             foreach (TextureType type in keys) {
                 tilesets.Add(type.ToString(), type);
             }
 
-            tile_pallette = new List<AnimatedSprite>();
+            canvas = new Panel(new Vector2(levelManager.tiles.GetLength(0), levelManager.tiles.GetLength(1)) * -tileSize / 2, new Vector2(levelManager.tiles.GetLength(0), levelManager.tiles.GetLength(1)) * tileSize, Color.White * 0.35f, Sprite.Layers[LayerType.Canvas], ref device);
+            tilePanel = new Panel(ScreenPosition.TopRight, Vector2.Zero, new Vector2(240, 540), Color.Gray * 0.75f, Sprite.Layers[LayerType.UI], ref device);
+            enemyPanel = new Panel(ScreenPosition.BottomLeft, Vector2.Zero, new Vector2(720, 100), Color.Gray * 0.75f, Sprite.Layers[LayerType.UI] + 0.01f, ref device);
 
-            canvas = new Panel(new Vector2(levelManager.tiles.GetLength(0), levelManager.tiles.GetLength(1)) * -tileSize/2, new Vector2(levelManager.tiles.GetLength(0), levelManager.tiles.GetLength(1)) * tileSize, Color.White * 0.35f, Sprite.Layers[LayerType.Canvas], ref device);
-            tilePanel = new Panel(ScreenPosition.TopRight, Vector2.Zero, new Vector2(cam.virtualWidth / 4, cam.virtualHeight), Color.Gray, Sprite.Layers[LayerType.UI], ref device);
-            enemyPanel = new Panel(ScreenPosition.BottomLeft, Vector2.Zero, new Vector2(cam.virtualWidth, cam.virtualHeight / 5.4f), Color.LightGray, Sprite.Layers[LayerType.UI] + 0.01f, ref device);
             dropdown = new DropDownContainer(tilePanel.position, new Vector2(100, 20), FontType.arial, new List<string>(tilesets.Keys), ref device);
-            button_size_up = new Button(delegate() { ChangeLevelSize(10, 10); }, dropdown.getPosition() + new Vector2(0, 200), new Vector2(50, 30), ref device, Color.White, "+10", FontType.arial);
+            dropdown.setRelativePosition(tilePanel, ScreenPosition.BottomCenter, new Vector2(0, -100), 1);
+
+            button_size_up = new Button(delegate () { ChangeLevelSize(10, 10); }, dropdown.getPosition() + new Vector2(0, 200), new Vector2(50, 30), ref device, Color.White, "+10", FontType.arial);
+            button_size_up.setRelativePosition(tilePanel, ScreenPosition.Center, new Vector2(35, 50), 1);
+
             button_size_down = new Button(delegate () { ChangeLevelSize(-10, -10); }, dropdown.getPosition() + new Vector2(0, 200), new Vector2(50, 30), ref device, Color.White, "-10", FontType.arial);
+            button_size_down.setRelativePosition(tilePanel, ScreenPosition.Center, new Vector2(-35, 50), 1);
+
+            enemyButtons = new Button[enemyTypes.Count];
+            int i = 0;
+            foreach (KeyValuePair<EnemyType, TextureType> type in enemyTypes) {
+                TextureType texture = type.Value;
+                enemyButtons[i] = new Button(delegate () {
+                    enemyTexture = texture;
+                    selectedEnemy = new Sprite(texture, Vector2.Zero, 0, Sprite.Layers[LayerType.UI] - 0.02f, Vector2.One);
+                    tileIsSelected = false;
+                    enemyIsSelected = true;
+
+                }, ScreenPosition.BottomLeft, Vector2.Zero, new Vector2(50, 50), ref device, Color.White, texture);
+
+                enemyButtons[i].setColor(Color.White * 0.75f, Color.Azure * 0.75f, Color.LightBlue * 0.75f, Color.Black);
+                enemyButtons[i].setRelativePosition(enemyPanel, ScreenPosition.MiddleLeft, new Vector2(10 + 50 * i, 0), 1);
+                i++;
+            }
         }
 
         // Always called
@@ -80,46 +116,60 @@ namespace Deflexion_Redux {
             if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) && !kState_OLD.IsKeyDown(Keys.LeftShift)) {
                 visible = !visible;
                 Debug.Print("editor visibility: " + visible);
-                ScaleUI();
-                MoveUI();
+                EnemyManager.Instance.appendEnemies(levelManager.enemies);
+                GameplayScreen.player.isAlive = true;
+                GameplayScreen.player.playerBullets.Clear();
             }
             kState_OLD = Keyboard.GetState();
         }
 
-        // Only called in Main when visible
+        // Only called when editor is visible/toggled
         public void Update() {
             MoveCamera();
-            MoveUI();
             dropdown.Update();
             button_size_up.Update();
             button_size_down.Update();
 
             if (Keyboard.GetState().IsKeyDown(Keys.P) && !kState_OLD.IsKeyDown(Keys.P))
-                SaveLayout(); // Saves level layout to .lvl XML file
+                SaveLayout(); // Saves level layout to XML file
 
-            if (selected)
-                tileCursorUpdate();
+            foreach (AnimatedSprite tileSprite in tile_pallette) {
+                if (tileSprite.isHovering(tileScale, false) && Mouse.GetState().LeftButton == ButtonState.Pressed) {
+                    tileIsSelected = true;
+                    enemyIsSelected = false;
+                    selectedTile = tileSprite.animCopyOf();
+                    selectedTile.Scale = Vector2.One;
+                }
+            }
+
+            if (tileIsSelected || enemyIsSelected)
+                CursorUpdate();
 
             if (dropdown.getText() != dropdownText) {
                 dropdownText = dropdown.getText();
-                loadTileset();
-                ScaleUI();
-                selected = false;
+                LoadTileset();
+                tileIsSelected = false;
+                enemyIsSelected = false;
+            }
+
+            for (int i = 0; i < enemyButtons.Length; i++) {
+                enemyButtons[i].Update();
             }
         }
 
         public void MoveCamera() {
             KeyboardState kState = Keyboard.GetState();
+            float value = 5 / (cam.zoom * (2 - cam.zoom));
 
             if (kState.IsKeyDown(Keys.W)) {
-                cam.position.Y -= 5 / cam.zoom;
+                cam.position.Y -= value;
             } else if (kState.IsKeyDown(Keys.S)) {
-                cam.position.Y += 5/ cam.zoom;
+                cam.position.Y += value;
             }
             if (kState.IsKeyDown(Keys.A)) {
-                cam.position.X -= 5 / cam.zoom;
+                cam.position.X -= value;
             } else if (kState.IsKeyDown(Keys.D)) {
-                cam.position.X += 5 / cam.zoom;
+                cam.position.X += value;
             }
 
 
@@ -129,118 +179,126 @@ namespace Deflexion_Redux {
                 } else if (cam.zoom > 0.1f) {
                     cam.zoom -= 0.1f;
                 }
-                ScaleUI();
             }
 
             scrollValue_OLD = Mouse.GetState().ScrollWheelValue;
         }
 
-        public void ScaleUI() {
-            float scalar = 1 / cam.zoom;
-
-            tilePanel.scaleSize(scalar);
-            enemyPanel.scaleSize(scalar);
-            dropdown.scaleSize(scalar);
-            button_size_up.scaleSize(scalar);
-            button_size_down.scaleSize(scalar);
-
-            tileScale = TILE_SCALE * scalar;
-
-            foreach(AnimatedSprite tile in tile_pallette) {
-                tile.setScale(new Vector2(tileScale, tileScale));
-            }
-        }
-
-        public void MoveUI() {
-            float scalar = 1 / cam.zoom;
-
-            tilePanel.scaleScreenPosition(ScreenPosition.TopRight, Vector2.Zero, scalar);
-            enemyPanel.scaleScreenPosition(ScreenPosition.BottomLeft, Vector2.Zero, scalar);
-            dropdown.scaleRelativePosition(tilePanel, ScreenPosition.BottomCenter, new Vector2(0, -100), scalar);
-            button_size_up.scaleRelativePosition(tilePanel, ScreenPosition.Center, new Vector2(35, 50), scalar);
-            button_size_down.scaleRelativePosition(tilePanel, ScreenPosition.Center, new Vector2(-35, 50), scalar);
-
-            canvas.position = new Vector2(levelManager.tiles.GetLength(0), levelManager.tiles.GetLength(1)) * -tileSize / 2;
-            canvas.size = new Vector2(levelManager.tiles.GetLength(0), levelManager.tiles.GetLength(1)) * tileSize;
-
-            float x = 0, y = 0;
-            for (int i = 0; i < tile_pallette.Count; i++) {
-                tile_pallette[i].Position = tilePanel.position + new Vector2((tilePanel.size.X - tile_pallette[i].sheetSize.X) / 2 + x, tilePanel.size.Y / 5 + y);
-
-                if (tile_pallette[i].isHovering(tileScale) && Mouse.GetState().LeftButton == ButtonState.Pressed) {
-                    selected = true;
-                    selectedTile = tile_pallette[i].animCopyOf();
-                    selectedTile.Scale = Vector2.One;
-                }
-
-                x += tileSize * tileScale;
-                if (x >= tile_pallette[i].sheetSize.X) {
-                    x = 0;
-                    y += tileSize * tileScale;
-                }
-            }
-        }
-
         public void SaveLayout() {
             string path = Path.Combine(directory, "testLevel2.xml");
-            XmlManager.Save<Level>(@path, new Level(levelManager.tiles));
+            XmlManager.Save<Level>(@path, new Level(levelManager.tiles, levelManager.enemies));
         }
 
-        public void tileCursorUpdate() {
-            Vector2 mousePosition = cam.getMousePosition();
-            selectedTile.Position = new Vector2(MathF.Round((mousePosition.X - (tileSize / 2)) / tileSize, MidpointRounding.AwayFromZero),
-                                                MathF.Round((mousePosition.Y - (tileSize / 2)) / tileSize, MidpointRounding.AwayFromZero)) * tileSize;
-            int x = (int)selectedTile.Position.X / tileSize + levelManager.tiles.GetLength(0) / 2;
-            int y = (int)selectedTile.Position.Y / tileSize + levelManager.tiles.GetLength(1) / 2;
+        public void CursorUpdate() {
+            Vector2 mousePosition = cam.getMousePosition(true);
+            Vector2 cursorPosition = new Vector2(MathF.Round(((mousePosition.X / cam.scalar) - ((tileSize * cam.scalar) / 2)) / tileSize, MidpointRounding.AwayFromZero),
+                                                    MathF.Round(((mousePosition.Y / cam.scalar) - ((tileSize * cam.scalar) / 2)) / tileSize, MidpointRounding.AwayFromZero)) * tileSize * cam.scalar;
+            if (tileIsSelected)
+                selectedTile.Position = cursorPosition;
+            if (enemyIsSelected)
+                selectedEnemy.Position = cursorPosition;
 
-            if (Mouse.GetState().LeftButton == ButtonState.Pressed && !tilePanel.isHovering() && x >= 0 && x < levelManager.tiles.GetLength(0) && y >= 0 && y < levelManager.tiles.GetLength(1)) {
-                levelManager.tiles[x, y] = new Tile(tilesets[dropdown.getText()], selectedTile.Position, true, Sprite.Layers[LayerType.Tiles], tileSize, selectedTile.currentFrame);
-            }
+            int x = (int)(cursorPosition.X / (tileSize * cam.scalar) + levelManager.tiles.GetLength(0) / 2);
+            int y = (int)(cursorPosition.Y / (tileSize * cam.scalar) + levelManager.tiles.GetLength(1) / 2);
 
-            if (Mouse.GetState().RightButton == ButtonState.Pressed && x >= 0 && x < levelManager.tiles.GetLength(0) && y >= 0 && y < levelManager.tiles.GetLength(1)) {
-                if (!tilePanel.isHovering()) {
-                    levelManager.tiles[x, y] = new Tile();
+            if (!tilePanel.isHovering(false) && !enemyPanel.isHovering(false) && x >= 0 && x < levelManager.tiles.GetLength(0) && y >= 0 && y < levelManager.tiles.GetLength(1)) {
+                if (Mouse.GetState().LeftButton == ButtonState.Pressed) {
+                    if (tileIsSelected && !enemyIsSelected) {
+                        levelManager.tiles[x, y] = new Tile(tilesets[dropdown.getText()], selectedTile.Position, true, Sprite.Layers[LayerType.Tiles], tileSize, selectedTile.currentFrame);
+                    } else if (enemyIsSelected && !tileIsSelected) {
+                        Vector2 enemyPosition = cursorPosition + (new Vector2(tileSize / 2, tileSize / 2)) * cam.scalar;
+                        switch (enemyTexture) {
+                            case TextureType.turret_bottom:
+                                levelManager.enemies[x, y] = new EnemyTile(EnemyType.Turret, enemyPosition);
+                                break;
+                            case TextureType.test_drone:
+                                levelManager.enemies[x, y] = new EnemyTile(EnemyType.Drone, enemyPosition);
+                                break;
+                            default:
+                                Debug.Print("Uhhhh what that was not supposed to happen...");
+                                break;
+                        }
+                    }
                 }
+
+                if (Mouse.GetState().RightButton == ButtonState.Pressed) {
+                    if (!tilePanel.isHovering(false)) {
+                        if (tileIsSelected && !enemyIsSelected) {
+                            levelManager.tiles[x, y] = new Tile();
+                        } else if (enemyIsSelected && !tileIsSelected) {
+                            levelManager.enemies[x, y] = new EnemyTile(EnemyType.none, Vector2.Zero);
+                        }
+                    }
+                }
+            } else if (Mouse.GetState().RightButton == ButtonState.Pressed) {
+                enemyIsSelected = false;
+                tileIsSelected = false;
             }
         }
 
-        public void loadTileset() {
+        public void LoadTileset() {
             tile_pallette.Clear();
             tileScale = TILE_SCALE;
+
+            // Height/Width count set which tile it is in the tileset
             int heightCount = AssetManager.textures[tilesets[dropdown.getText()]].Height / tileSize;
             int widthCount = AssetManager.textures[tilesets[dropdown.getText()]].Width / tileSize;
 
-            for (int y = 0; y < heightCount; y++) {
-                for (int x = 0; x < widthCount; x++) {
-                    tile_pallette.Add(new AnimatedSprite(tilesets[dropdown.getText()], dropdown.getPosition() + new Vector2(dropdown.getSize().X / 2, -300), 0, tileSize, Sprite.Layers[LayerType.UI] - 0.01f, new Vector2(tileScale, tileScale), Vector2.Zero, x + (y * heightCount)));
+            // Just creates the sprites, does not set them in correct position
+            for (int _y = 0; _y < heightCount; _y++) {
+                for (int _x = 0; _x < widthCount; _x++) {
+                    tile_pallette.Add(new AnimatedSprite(tilesets[dropdown.getText()], Vector2.Zero, 0, tileSize, Sprite.Layers[LayerType.UI] - 0.01f, new Vector2(tileScale, tileScale), Vector2.Zero, _x + (_y * heightCount)));
                 }
             }
 
+            // If the tiles do not fit inside of the bounds of the panel, the scale will shrink until they are able to
             while (AssetManager.textures[tilesets[dropdown.getText()]].Width * tileScale > tilePanel.size.X && tileScale > 0.5f) {
-                tileScale -= 0.5f;
+                tileScale -= 0.1f;
             }
+
+            // Positions tiles in correct position according to their original position inside tileset image
+            float x = 0, y = 0;
+            for (int i = 0; i < tile_pallette.Count; i++) {
+                tile_pallette[i].Position = tilePanel.position + new Vector2(((tilePanel.size.X * cam.scalar - tile_pallette[i].sheetSize.X) / 2) + x, (tilePanel.size.Y / 5) * cam.scalar + y);
+
+                x += tileSize * tileScale * cam.scalar;
+                if (x >= tile_pallette[i].sheetSize.X) {
+                    x = 0;
+                    y += tileSize * tileScale * cam.scalar;
+                }
+            };
         }
 
         public void ChangeLevelSize(int deltaX, int deltaY) {
-            Tile[,] oldArray = levelManager.tiles;
-            int _width = oldArray.GetLength(0);
-            int _height = oldArray.GetLength(1);
-            Tile[,] newArray = new Tile[_width + deltaX, _height + deltaY];
+            Tile[,] tiles_OLD = levelManager.tiles;
+            EnemyTile[,] enemyTiles_OLD = levelManager.enemies;
+
+            int _width = tiles_OLD.GetLength(0);
+            int _height = tiles_OLD.GetLength(1);
+
+            Tile[,] tiles_NEW = new Tile[_width + deltaX, _height + deltaY];
+            EnemyTile[,] enemyTiles_NEW = new EnemyTile[_width + deltaX, _height + deltaY];
+
             for (int x = 0; x < _width + deltaX; x++) {
                 for (int y = 0; y < _height + deltaY; y++) {
-                    if (x < deltaX / 2 || x >= _width + (deltaX - (deltaX / 2))|| y < deltaY / 2 || y >= _height + (deltaY - (deltaY / 2))) {
-                        newArray[x, y] = new Tile();
-                    }  else {
-                        newArray[x, y] = oldArray[x - (deltaX / 2), y - (deltaY / 2)];
+                    if (x < deltaX / 2 || x >= _width + (deltaX - (deltaX / 2)) || y < deltaY / 2 || y >= _height + (deltaY - (deltaY / 2))) {
+                        tiles_NEW[x, y] = new Tile();
+                        enemyTiles_NEW[x, y] = new EnemyTile(EnemyType.none, Vector2.Zero);
+                    } else {
+                        tiles_NEW[x, y] = tiles_OLD[x - (deltaX / 2), y - (deltaY / 2)];
+                        enemyTiles_NEW[x, y] = enemyTiles_OLD[x - (deltaX / 2), y - (deltaY / 2)];
                     }
                 }
             }
-            levelManager.tiles = newArray;
+            levelManager.tiles = tiles_NEW;
+            levelManager.enemies = enemyTiles_NEW;
+
+            canvas.position = new Vector2(levelManager.tiles.GetLength(0), levelManager.tiles.GetLength(1)) * -tileSize / (2 / cam.scalar);
+            canvas.size = new Vector2(levelManager.tiles.GetLength(0), levelManager.tiles.GetLength(1)) * tileSize;
         }
 
-        public void Draw(SpriteBatch spriteBatch) {
+        public void DrawUI(SpriteBatch spriteBatch) {
             if (visible) {
-                canvas.Draw(spriteBatch);
                 tilePanel.Draw(spriteBatch);
                 dropdown.Draw(spriteBatch);
                 button_size_up.Draw(spriteBatch);
@@ -251,11 +309,27 @@ namespace Deflexion_Redux {
                     tile.animDraw(spriteBatch);
                 }
 
-                if (selected) {
-                    selectedTile.animDraw(spriteBatch);
+                foreach (Button button in enemyButtons) {
+                    button.Draw(spriteBatch);
                 }
+
             }
         }
 
+        public void DrawCanvas(SpriteBatch spriteBatch) {
+            if (visible) {
+                canvas.Draw(spriteBatch);
+                if (tileIsSelected)
+                    selectedTile.animDraw(spriteBatch);
+                if (enemyIsSelected) {
+                    selectedEnemy.Draw(spriteBatch);
+                }
+                foreach(EnemyTile enemyTile in levelManager.enemies) {
+                    if (enemyTile.enemyType != EnemyType.none) {
+                        DrawHandler.Instance.DrawTexture(spriteBatch, enemyTypes[enemyTile.enemyType], enemyTile.position, Vector2.One, new Vector2(8, 8));
+                    }
+                }
+            }
+        }
     }
 }

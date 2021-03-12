@@ -22,7 +22,7 @@ namespace Deflexion_Redux {
         }
 
         public void action() {
-            if (panel.isHovering()) {
+            if (panel.isHovering(false)) {
                 panel.changeColor(Color.Azure);
                 if (Mouse.GetState().LeftButton == ButtonState.Pressed) {
                     selected = true;
@@ -41,11 +41,11 @@ namespace Deflexion_Redux {
         }
 
         public void scaleScreenPosition(ScreenPosition spot, Vector2 offset, float scalar) {
-            panel.scaleScreenPosition(spot, offset, scalar);
+            panel.setScreenPosition(spot, offset, scalar);
         }
 
         public void scaleRelativePosition(Panel parentPanel, ScreenPosition pos, Vector2 offset, float scalar) {
-            panel.scaleRelativePosition(parentPanel, pos, offset, scalar);
+            panel.setRelativePosition(parentPanel, pos, offset, scalar);
         }
 
         public void scaleSize(float scalar) {

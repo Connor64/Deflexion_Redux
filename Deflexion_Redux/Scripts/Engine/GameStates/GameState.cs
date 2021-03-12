@@ -9,11 +9,11 @@ namespace Deflexion_Redux {
     public abstract class GameState : IGameState {
         protected GraphicsDevice _graphicsDevice;
         protected Camera cam;
-        protected EffectHandler effectHandler;
+        protected DrawHandler drawHandler;
         public GameState(GraphicsDevice graphicsDevice) {
             _graphicsDevice = graphicsDevice;
             cam = Camera.Instance;
-            effectHandler = EffectHandler.Instance;
+            drawHandler = DrawHandler.Instance;
         }
         public abstract void Initialize();
         public abstract void LoadContent(ContentManager content);

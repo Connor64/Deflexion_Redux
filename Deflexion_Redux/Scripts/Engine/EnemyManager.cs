@@ -1,21 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 
 namespace Deflexion_Redux {
-    public class EnemyManager {
-        public List<Bullet> enemyBullets;
-        // Global enemy projectiles
 
-        public Texture2D bullet;
-        public Texture2D turret_base;
-        public Texture2D turret_gun;
-        public Texture2D drone_ship;
-        // Textures
+    public enum EnemyType {
+        Turret,
+        Drone,
+        none,
+    }
+
+    public class EnemyManager {
+        // Global enemy projectiles
+        public List<Bullet> enemyBullets;
 
         public List<Enemy> enemies = new List<Enemy>();
         public Player player;
@@ -35,10 +37,6 @@ namespace Deflexion_Redux {
         }
 
         public void Load(Player player) {
-            bullet = AssetManager.textures[TextureType.test_enemy_blast];
-            turret_base = AssetManager.textures[TextureType.turret_bottom];
-            turret_gun = AssetManager.textures[TextureType.turret_top];
-            drone_ship = AssetManager.textures[TextureType.test_drone];
             this.player = player;
         }
 
@@ -54,14 +52,25 @@ namespace Deflexion_Redux {
             enemies = toRemove;
         }
 
-        public void Draw(SpriteBatch spriteBatch) {
-            foreach (Enemy enemy in enemies) {
-                if (enemy.isAlive) {
-                    enemy.Draw(spriteBatch);
+        public void appendEnemies(EnemyTile[,] newEnemyList) {
+            enemies.Clear();
+            enemyBullets.Clear();
+
+            foreach(EnemyTile enemy in newEnemyList) {
+                if (enemy.enemyType != EnemyType.none) {
+                    SpawnEnemy(enemy.enemyType, enemy.position);
                 }
             }
-            foreach (Bullet bullet in enemyBullets) {
-                bullet.draw(spriteBatch);
+        }
+
+        public void SpawnEnemy(EnemyType enemy, Vector2 position) {
+            switch (enemy) {
+                case EnemyType.Turret:
+                    enemies.Add(new Turret(position));
+                    break;
+                case EnemyType.Drone:
+                    enemies.Add(new Drone(position));
+                    break;
             }
         }
 
@@ -73,6 +82,17 @@ namespace Deflexion_Redux {
                     toRemove.RemoveAt(i);
                 }
                 enemies = toRemove;
+            }
+        }
+
+        public void Draw(SpriteBatch spriteBatch) {
+            foreach (Enemy enemy in enemies) {
+                if (enemy.isAlive) {
+                    enemy.Draw(spriteBatch);
+                }
+            }
+            foreach (Bullet bullet in enemyBullets) {
+                bullet.draw(spriteBatch);
             }
         }
     }

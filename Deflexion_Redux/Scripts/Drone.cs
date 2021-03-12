@@ -12,19 +12,21 @@ namespace Deflexion_Redux {
         private float rotation;
 
         public Drone(Vector2 position) {
+            mainTexture = TextureType.test_drone;
+
             collisionBoxSize = 6;
             rotation = 0;
             bodyType = BodyType.Enemy;
             elapsedTime = (float)rnd.NextDouble();
             baseSpeedLimit = 300;
             screenTolerance = new Vector2(128, 128);
+            startingPosition = position;
             this.position = position;
             shipSprite = new Sprite(TextureType.test_drone, position, 0, Sprite.Layers[LayerType.Turret], Vector2.One, new Vector2(8, 8));
-            
         }
 
         public override void Update(Vector2 playerPosition, float deltaTime) {
-            if (cam.contains(position, screenTolerance)) {
+            if (Camera.Instance.contains(position, screenTolerance)) {
                 elapsedTime += deltaTime;
                 rotation = -MathF.Atan2(x, y);
                 flyTowardsPlayer(playerPosition);
@@ -38,7 +40,7 @@ namespace Deflexion_Redux {
 
         public override void Attack(float deltaTime) {
             if (elapsedTime > 4.5f) {
-                enemyManager.enemyBullets.Add(new Bullet(TextureType.test_enemy_blast, position, 450f, rotation, 1));
+                EnemyManager.Instance.enemyBullets.Add(new Bullet(TextureType.test_enemy_blast, position, 450f, rotation, 1));
                 elapsedTime = 0; // randomize?
             }
         }

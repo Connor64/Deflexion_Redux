@@ -105,7 +105,7 @@ namespace Deflexion_Redux {
 
 
         public void mouseFollow() {
-            Vector2 mousePosition = cam.getMousePosition();
+            Vector2 mousePosition = cam.getMousePosition(true);
             float x = position.X - mousePosition.X;
             float y = position.Y - mousePosition.Y;
 

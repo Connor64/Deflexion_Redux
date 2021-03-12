@@ -14,16 +14,16 @@ namespace Deflexion_Redux {
         public float layer;
         public float rotation = 0;
 
-        public Tile(TextureType textureType, Vector2 position, bool collidable, float layer, int pixelWidth, int tilePos) {
+        public Tile(TextureType texture, Vector2 position, bool collidable, float layer, int pixelWidth, int tilePos) {
             empty = false;
-            sprite = new AnimatedSprite(textureType, position, 0, pixelWidth, layer, Vector2.One, Vector2.Zero, tilePos);
+            sprite = new AnimatedSprite(texture, position, 0, pixelWidth, layer, Vector2.One, Vector2.Zero, tilePos);
 
             //sprite = new AnimatedSprite(textureType, position, 0, Vector2.Zero, Vector2.One, AssetManager.textures[textureType].Height / pixelWidth, AssetManager.textures[textureType].Width / pixelWidth, pixelWidth, tilePos, layer);
             this.position = position;
             this.collidable = collidable;
             this.layer = layer;
 
-            bounds = new Vector2(pixelWidth, pixelWidth);
+            bounds = new Vector2(pixelWidth, pixelWidth) * Camera.Instance.scalar;
         }
 
         public Tile() {
@@ -36,7 +36,9 @@ namespace Deflexion_Redux {
         }
 
         public void Draw(SpriteBatch spriteBatch) {
-            sprite.animDraw(spriteBatch);
+            if (sprite != null) {
+                sprite.animDraw(spriteBatch);
+            }
         }
     }
 }

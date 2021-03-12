@@ -15,7 +15,7 @@ namespace Deflexion_Redux {
         private Vector2[][] positions;
         
         public Background(Vector2 startingPosition, TextureType texture) {
-            textureSize = new Vector2(AssetManager.textures[TextureType.test_space_background].Width, AssetManager.textures[texture].Height);
+            textureSize = new Vector2(AssetManager.textures[TextureType.test_space_background].Width, AssetManager.textures[texture].Height) * Camera.Instance.scalar;
             positions = generatePositions();
 
             for (int i = 0; i < backgrounds.Length; i++) {

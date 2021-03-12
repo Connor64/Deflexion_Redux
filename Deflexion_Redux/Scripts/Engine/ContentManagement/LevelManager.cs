@@ -12,6 +12,7 @@ using Microsoft.Xna.Framework.Content;
 namespace Deflexion_Redux {
     class LevelManager {
         public Tile[,] tiles;
+        public EnemyTile[,] enemies;
 
         public Vector2 startingPosition = Vector2.Zero;
         private EnemyManager enemyManager = EnemyManager.Instance;
@@ -29,9 +30,11 @@ namespace Deflexion_Redux {
         public void Load(LevelType level, string entityPath) {
             if (level == LevelType.new_level) {
                 tiles = new Tile[200, 100];
+                enemies = new EnemyTile[200, 100];
                 for (int x = 0; x < 200; x++) {
                     for (int y = 0; y < 100; y++) {
                         tiles[x, y] = new Tile();
+                        enemies[x, y] = new EnemyTile(EnemyType.none, Vector2.Zero);
                     }
                 }
             } else {
@@ -39,15 +42,19 @@ namespace Deflexion_Redux {
                 int width = currentLevel.width;
                 int height = currentLevel.height;
                 tiles = new Tile[width, height];
+                enemies = new EnemyTile[width, height];
                 Tile[] newTiles = currentLevel.tiles;
+                EnemyTile[] newEnemies = currentLevel.enemies;
 
                 int i = 0;
                 for (int x = 0; x < width; x++) {
                     for (int y = 0; y < height; y++) {
                         tiles[x, y] = newTiles[i];
+                        enemies[x, y] = newEnemies[i];
                         i++;
                     }
                 }
+                enemyManager.appendEnemies(enemies);
             }
         }
 
@@ -57,37 +64,6 @@ namespace Deflexion_Redux {
                     tile.Draw(spriteBatch);
                 }
             }
-        }
-
-        int[,] readLevel(Bitmap image) {
-            int[,] data = new int[image.Width, image.Height];
-            System.Drawing.Color pixel;
-            string htmlColor;
-
-            Debug.Print("" + image.Width);
-
-            for (int x = 0; x < image.Width; x++) {
-                for (int y = 0; y < image.Height; y++) {
-                    pixel = image.GetPixel(x, y);
-                    htmlColor = ColorTranslator.ToHtml(pixel);
-
-                    switch (htmlColor) {
-                        case "#000000": // Black (technically also transparent so backgrounds must be a color) - Turret
-                            data[x, y] = 1;
-                            break;
-                        case "#FF0000": // Red - Drone
-                            data[x, y] = 2;
-                            break;
-                        case "#00FF00": // Green - Player
-                            data[x, y] = 3;
-                            break;
-                        default:
-                            data[x, y] = 0;
-                            break;
-                    }
-                }
-            }
-            return data;
         }
     }
 }

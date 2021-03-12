@@ -20,7 +20,11 @@ namespace Deflexion_Redux {
         // Values below are defaults and are meant to be changed in the constructor of whatever classes that inherit from this one.
         public BodyType bodyType;
         public float mass = 1f;
-        public float collisionBoxSize = 8f;         // Size of the object's collider in pixels (unscaled)
+        private float collider = 8f;
+        public float collisionBoxSize {
+            get { return collider; }
+            set { collider = value * cam.scalar; }
+        }
         public Vector2 position = Vector2.Zero;
         public Vector2 previousPosition = Vector2.Zero;
         public bool instantaneous = false;          // If true, object will stop immediately if no forces are applied
@@ -34,12 +38,11 @@ namespace Deflexion_Redux {
         public bool movable = true;
         //public bool stuck = false;
 
-        //public List<Tile> tiles = LevelManager.Instance.tiles;
-        public Tile[,] tiles = LevelManager.Instance.tiles;
+        //public Tile[,] tiles = LevelManager.Instance.tiles;
 
         public void addForce(Vector2 direction, float strength, float launchLimit) {
             if (direction != Vector2.Zero) {
-                force += Vector2.Normalize(direction) * strength;
+                force += Vector2.Normalize(direction) * strength * cam.scalar;
             }
             if (launchLimit > 0) {
                 speedLimit = launchLimit;
@@ -53,15 +56,12 @@ namespace Deflexion_Redux {
 
             velocity += acceleration * deltaTime; // v = vi + at
 
-            if (velocity.Length() > speedLimit) {
-                velocity = Vector2.Normalize(velocity) * speedLimit;
+            if (velocity.Length() > speedLimit * cam.scalar) {
+                velocity = Vector2.Normalize(velocity) * speedLimit * cam.scalar;
             }
 
             if (bodyType == BodyType.Player) {
-                if (tiles != LevelManager.Instance.tiles) {
-                    tiles = LevelManager.Instance.tiles;
-                }
-                position = tileCollision(position + velocity * deltaTime, tiles);
+                position = tileCollision(position + velocity * deltaTime, LevelManager.Instance.tiles);
             } else {
                 position += velocity * deltaTime;
             }
@@ -69,15 +69,15 @@ namespace Deflexion_Redux {
             if (!instantaneous && force == Vector2.Zero) {
 
                 if (velocity.X > 0) {
-                    velocity.X -= (resistance + speedLimit - baseSpeedLimit) * deltaTime;
+                    velocity.X -= (resistance + (speedLimit * cam.scalar) - baseSpeedLimit) * deltaTime;
                 } else if (velocity.X < 0) {
-                    velocity.X += (resistance + speedLimit - baseSpeedLimit) * deltaTime;
+                    velocity.X += (resistance + (speedLimit * cam.scalar) - baseSpeedLimit) * deltaTime;
                 }
 
                 if (velocity.Y > 0) {
-                    velocity.Y -= (resistance + speedLimit - baseSpeedLimit) * deltaTime;
+                    velocity.Y -= (resistance + (speedLimit * cam.scalar) - baseSpeedLimit) * deltaTime;
                 } else if (velocity.Y < 0) {
-                    velocity.Y += (resistance + speedLimit - baseSpeedLimit) * deltaTime;
+                    velocity.Y += (resistance + (speedLimit * cam.scalar) - baseSpeedLimit) * deltaTime;
                 }
 
                 if (MathF.Sqrt(velocity.X * velocity.X + velocity.Y * velocity.Y) < velocityThreshold) {

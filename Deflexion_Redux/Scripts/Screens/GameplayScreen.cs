@@ -15,7 +15,7 @@ namespace Deflexion_Redux {
         private LevelEditor levelEditor = LevelEditor.Instance;
         private EnemyManager enemyManager = EnemyManager.Instance;
 
-        private Player player;
+        public static Player player;
         private Background background;
 
         private Panel pausePanel;
@@ -38,15 +38,17 @@ namespace Deflexion_Redux {
 
             kState_OLD = Keyboard.GetState();
 
-            pausePanel = new Panel(cam.position - new Vector2(-cam.virtualWidth / 2, -cam.virtualHeight / 2), new Vector2(cam.virtualWidth, cam.virtualHeight), Color.Black * 0.5f, Sprite.Layers[LayerType.UI], ref _graphicsDevice);
+            pausePanel = new Panel(Vector2.Zero, new Vector2(cam.virtualWidth, cam.virtualHeight), Color.Black * 0.5f, Sprite.Layers[LayerType.UI], ref _graphicsDevice);
 
             return_Button = new Button(delegate { paused = false; }, new Vector2(-50, -50), new Vector2(100, 50), ref _graphicsDevice);
             return_Button.setText("Return", Alignment.Center, 1, FontType.arial);
             return_Button.setColor(ButtonStyle.Gray, 0.75f);
+            return_Button.setRelativePosition(pausePanel, ScreenPosition.Center, new Vector2(0, -50), 1);
 
             exit_Button = new Button(delegate { GameStateManager.Instance.ChangeScreen(new TitleScreen(_graphicsDevice)); }, new Vector2(-50, 50), new Vector2(100, 50), ref _graphicsDevice, Color.LightGray * 0.75f, "Quit to Menu", FontType.arial);
             exit_Button.setText("Quit to Menu", Alignment.Center, 1, FontType.arial);
             exit_Button.setColor(ButtonStyle.Gray, 0.75f);
+            exit_Button.setRelativePosition(pausePanel, ScreenPosition.Center, new Vector2(0, 50), 1);
 
             AudioManager.Instance.playSong(SoundType.test_song_intro, SoundType.test_song_body, true, 0.75f);
         }
@@ -71,10 +73,7 @@ namespace Deflexion_Redux {
 
             if (Keyboard.GetState().IsKeyDown(Keys.Escape) && !kState_OLD.IsKeyDown(Keys.Escape)) {
                 paused = !paused;
-                pausePanel.position = cam.position + new Vector2(-cam.virtualWidth / 2, -cam.virtualHeight / 2);
-
-                return_Button.setPosition(cam.position + new Vector2(-50, -50));
-                exit_Button.setPosition(cam.position + new Vector2(-50, 50));
+                
             }
 
             if (!paused) {
@@ -115,29 +114,31 @@ namespace Deflexion_Redux {
         public override void Draw(SpriteBatch spriteBatch) {
             List<RenderTarget2D> targets = new List<RenderTarget2D>();
 
-            // Background, Enemies, Tiles
-            effectHandler.BeginEffect(spriteBatch, ref _graphicsDevice, ref targets, EffectType.none);
+            // Background, Enemies, Tiles, Level editor canvas
+            drawHandler.BeginEffect(spriteBatch, ref _graphicsDevice, ref targets, EffectType.none);
             background.Draw(spriteBatch);
-            enemyManager.Draw(spriteBatch);
+            if (!levelEditor.visible) {
+                enemyManager.Draw(spriteBatch);
+            }
             levelManager.Draw(spriteBatch);
+            levelEditor.DrawCanvas(spriteBatch);
             spriteBatch.End();
 
             // Player w/ effect
-            effectHandler.BeginEffect(spriteBatch, ref _graphicsDevice, ref targets, EffectType.test);
+            drawHandler.BeginEffect(spriteBatch, ref _graphicsDevice, ref targets, EffectType.test);
             player.Draw(spriteBatch);
             spriteBatch.End();
 
-            // UI
-            effectHandler.BeginEffect(spriteBatch, ref _graphicsDevice, ref targets, EffectType.none);
+            drawHandler.DrawTargets(spriteBatch, ref targets);
+
+            drawHandler.DrawUI(spriteBatch);
             if (paused) {
                 pausePanel.Draw(spriteBatch);
                 return_Button.Draw(spriteBatch);
                 exit_Button.Draw(spriteBatch);
             }
-            levelEditor.Draw(spriteBatch);
+            levelEditor.DrawUI(spriteBatch);
             spriteBatch.End();
-
-            effectHandler.DrawTargets(spriteBatch, ref targets);
         }
 
         void bulletUpdate(List<Bullet> bullets, out List<Bullet> outBullets) {

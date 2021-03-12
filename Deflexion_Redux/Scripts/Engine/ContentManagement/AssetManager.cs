@@ -30,6 +30,7 @@ namespace Deflexion_Redux {
         editor_test_1,
         editor_test_2,
         editor_test_3,
+        alpha_tiles,
 
         deflexion_logo,
 
@@ -63,9 +64,32 @@ namespace Deflexion_Redux {
         public static Dictionary<SoundType, SoundEffect> sounds = new Dictionary<SoundType, SoundEffect>();
         public static Dictionary<EffectType, Effect> effects = new Dictionary<EffectType, Effect>();
 
-        public static void LoadTextures(ContentManager content) {
-            
+        public static void LoadAssets(ContentManager content) {
+
             // Normal Textures
+            LoadTextures(content);
+
+            // Tilesets
+            LoadTilesets(content);
+
+            // Fonts
+            fonts.Add(FontType.arial, content.Load<SpriteFont>("Arial"));
+
+            // Levels
+            LoadLevels(content.RootDirectory);
+
+            // Sounds
+            LoadSounds(content);
+
+            // Effects
+            LoadEffects(content);
+        }
+
+
+        /// <summary>
+        /// Methods used to load assets
+        /// </summary>
+        public static void LoadTextures(ContentManager content) {
             textures.Add(TextureType.player_bottom, content.Load<Texture2D>("Sprites/test_ship_bottom"));
             textures.Add(TextureType.player_shield, content.Load<Texture2D>("Sprites/test_shield_2"));
             textures.Add(TextureType.player_gun, content.Load<Texture2D>("Sprites/test_ship_top"));
@@ -82,39 +106,49 @@ namespace Deflexion_Redux {
             textures.Add(TextureType.test_space_background, content.Load<Texture2D>("Sprites/spaceBackground_test"));
 
             textures.Add(TextureType.deflexion_logo, content.Load<Texture2D>("Sprites/deflexionLogo"));
-
-            // Tilesets
+        }
+        public static void LoadTilesets(ContentManager content) {
             textures.Add(TextureType.test_tile, content.Load<Texture2D>("Tilesets/Tile"));
             textures.Add(TextureType.editor_test_1, content.Load<Texture2D>("Tilesets/Editor_Testing"));
             textures.Add(TextureType.editor_test_2, content.Load<Texture2D>("Tilesets/Editor_Testing2"));
             textures.Add(TextureType.editor_test_3, content.Load<Texture2D>("Tilesets/Editor_Testing3"));
-
-            // Fonts
-            fonts.Add(FontType.arial, content.Load<SpriteFont>("Arial"));
-
-            // Levels
-            levels.Add(LevelType.test_level, XmlManager.Load<Level>(Path.Combine(content.RootDirectory, "testLevel2.xml")));
-
-            // Sounds
-            sounds.Add(SoundType.test_song_intro, content.Load<SoundEffect>("Audio/Xyralon (Intro)"));
-            sounds.Add(SoundType.test_song_body, content.Load<SoundEffect>("Audio/Xyralon (Body)"));
-
-            // Effects
+            textures.Add(TextureType.alpha_tiles, content.Load<Texture2D>("Tilesets/test_tiles"));
+        }
+        public static void LoadEffects(ContentManager content) {
             effects.Add(EffectType.test, content.Load<Effect>("Effects/test_effect"));
         }
+        public static void LoadSounds(ContentManager content) {
+            sounds.Add(SoundType.test_song_intro, content.Load<SoundEffect>("Audio/Xyralon (Intro)"));
+            sounds.Add(SoundType.test_song_body, content.Load<SoundEffect>("Audio/Xyralon (Body)"));
+        }
+        public static void LoadLevels(string directory) {
+            levels.Add(LevelType.test_level, XmlManager.Load<Level>(Path.Combine(directory, "testLevel2.xml")));
+        }
 
-        //public static void loadTexture(TextureType texture) {
-        //    if (!textures.ContainsKey(texture)) {
-        //        switch (texture) {
-        //            case TextureType.
-        //        }
-        //    }
-        //}
 
-        //public static void LoadTextures_Player(ContentManager content) {
-        //    textures.Add(TextureType.player_bottom, content.Load<Texture2D>("Sprites/test_ship_bottom"));
-        //    textures.Add(TextureType.player_shield, content.Load<Texture2D>("Sprites/test_shield_2"));
-        //    textures.Add(TextureType.player_gun, content.Load<Texture2D>("Sprites/test_ship_top"));
-        //}
+        /// <summary>
+        /// Methods used to unload assets
+        /// </summary>
+        public static void UnloadTextures() {
+            foreach(KeyValuePair<TextureType, Texture2D> texture in textures) {
+                texture.Value.Dispose();
+            }
+            textures.Clear();
+        }
+        public static void UnloadEffects() {
+            foreach(KeyValuePair<EffectType, Effect> effect in effects) {
+                effect.Value.Dispose();
+            }
+            effects.Clear();
+        }
+        public static void UnloadSounds() {
+            foreach(KeyValuePair<SoundType, SoundEffect> sound in sounds) {
+                sound.Value.Dispose();
+            }
+            sounds.Clear();
+        }
+        public static void UnloadLevels() {
+            levels.Clear();
+        }
     }
 }

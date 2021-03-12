@@ -29,6 +29,9 @@ namespace Deflexion_Redux {
             cam.SetVirtualResolution(GraphicsDevice.DisplayMode.Width / 2, GraphicsDevice.DisplayMode.Height / 2);
             cam.SetResolution(GraphicsDevice.DisplayMode.Width, GraphicsDevice.DisplayMode.Height, true);
 
+            //cam.SetVirtualResolution(400, 300);
+            //cam.SetResolution(800, 600, false);
+
             gameStateManager = GameStateManager.Instance;
             AudioManager.Instance.setVolume(0.5f);
 
@@ -39,7 +42,7 @@ namespace Deflexion_Redux {
 
         protected override void LoadContent() {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            AssetManager.LoadTextures(Content);
+            AssetManager.LoadAssets(Content);
 
             gameStateManager.setContent(Content);
             gameStateManager.AddScreen(new TitleScreen(GraphicsDevice));

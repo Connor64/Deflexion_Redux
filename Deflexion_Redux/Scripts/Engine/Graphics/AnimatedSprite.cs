@@ -34,8 +34,8 @@ namespace Deflexion_Redux {
 
             totalFrames = Rows * Columns;
 
-            sheetSize = new Vector2(width * scale.X, height * scale.Y);
-            Size = new Vector2((AssetManager.textures[textureType].Width / Columns) * scale.X, (AssetManager.textures[textureType].Height / Rows) * scale.Y); // The true size of the scaled sprite shown on screen (not the raw texture)
+            sheetSize = new Vector2(width * scale.X, height * scale.Y) * cam.scalar;
+            Size = new Vector2((AssetManager.textures[textureType].Width / Columns) * scale.X, (AssetManager.textures[textureType].Height / Rows) * scale.Y) * cam.scalar; // The true size of the scaled sprite shown on screen (not the raw texture)
         }
 
         public AnimatedSprite(TextureType textureType, Vector2 startingPosition, float rotation, int pixelWidth, float layer, Vector2 scale, Vector2 origin, int startingFrame) : this(textureType, startingPosition, rotation, pixelWidth, layer, scale) {
@@ -51,7 +51,7 @@ namespace Deflexion_Redux {
 
         public void setScale(Vector2 scale) {
             Scale = scale;
-            sheetSize = new Vector2(width * scale.X, height * scale.Y);
+            sheetSize = new Vector2(width * scale.X, height * scale.Y) * cam.scalar;
         }
 
         public void Update() {
@@ -71,11 +71,11 @@ namespace Deflexion_Redux {
 
             Rectangle sourceRectangle = new Rectangle(pixelWidth * column, pixelWidth * row, pixelWidth, pixelWidth);
 
-            spriteBatch.Draw(AssetManager.textures[textureType], Position, sourceRectangle, Color.White, Rotation, Origin, Scale, SpriteEffects.None, Layer);
+            spriteBatch.Draw(AssetManager.textures[textureType], Position, sourceRectangle, Color.White, Rotation, Origin, Scale * cam.scalar, SpriteEffects.None, Layer);
         }
 
         public AnimatedSprite animCopyOf() {
-            return new AnimatedSprite(textureType, Position, Rotation, pixelWidth, Layer, Scale * cam.spriteScalar, Origin, currentFrame, frameRate);
+            return new AnimatedSprite(textureType, Position, Rotation, pixelWidth, Layer, Scale * cam.scalar, Origin, currentFrame, frameRate);
         }
     }
 }
