@@ -19,14 +19,14 @@ namespace Deflexion_Redux {
 
         private Camera cam = Camera.Instance;
 
-        public void BeginEffect(SpriteBatch spriteBatch, ref GraphicsDevice device, ref List<RenderTarget2D> targets, EffectType effect) {
+        public void BeginEffect(SpriteBatch spriteBatch, ref GraphicsDevice device, ref List<RenderTarget2D> targets, Effect effect) {
             RenderTarget2D target = new RenderTarget2D(device, cam._Width, cam._Height);
             spriteBatch.GraphicsDevice.SetRenderTarget(target);
             spriteBatch.GraphicsDevice.Clear(new Color(0, 0, 0, 0));
-            if (effect == EffectType.none) {
+            if (effect == null) {
                 spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, null, null, cam.getScaleMatrix() * cam.getTranslationMatrix() * cam.getTransformationMatrix());
             } else {
-                spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, null, AssetManager.effects[effect], cam.getScaleMatrix() * cam.getTranslationMatrix() * cam.getTransformationMatrix());
+                spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, null, effect, cam.getScaleMatrix() * cam.getTranslationMatrix() * cam.getTransformationMatrix());
             }
 
             targets.Add(target);

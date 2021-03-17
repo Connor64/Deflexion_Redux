@@ -28,8 +28,8 @@ namespace Deflexion_Redux {
     public class Sprite {
 
         public static Dictionary<LayerType, float> Layers = new Dictionary<LayerType, float>() {
-            {LayerType.Canvas,     1.00f},
             {LayerType.Background, 0.99f},
+            {LayerType.Canvas,     0.97f},
             {LayerType.Tiles,      0.95f},
             {LayerType.Bullets,    0.90f},
             {LayerType.Enemies,    0.75f},

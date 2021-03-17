@@ -22,6 +22,7 @@ namespace Deflexion_Redux {
         private Button return_Button, exit_Button;
 
         private Effect fx;
+        private Effect darken;
 
         private float deltaTime = 0;
         private bool paused = false;
@@ -63,7 +64,9 @@ namespace Deflexion_Redux {
             background = new Background(player.position, TextureType.test_space_background);
             cam.position = player.position;
 
-            fx = AssetManager.effects[EffectType.test];
+            fx = AssetManager.effects[EffectType.test].Clone();
+            darken = AssetManager.effects[EffectType.test].Clone();
+            darken.Parameters["Percentage"].SetValue(0.5f);
         }
 
         public override void Update(GameTime gameTime) {
@@ -111,26 +114,45 @@ namespace Deflexion_Redux {
             Debug.Print("Unloading content");
         }
 
+        /// <summary>
+        /// Drawing order is: Background, Tiles, Enemies, Player, UI
+        /// </summary>
+        /// <param name="spriteBatch"></param>
         public override void Draw(SpriteBatch spriteBatch) {
             List<RenderTarget2D> targets = new List<RenderTarget2D>();
 
-            // Background, Enemies, Tiles, Level editor canvas
-            drawHandler.BeginEffect(spriteBatch, ref _graphicsDevice, ref targets, EffectType.none);
+            // Background Image
+            drawHandler.BeginEffect(spriteBatch, ref _graphicsDevice, ref targets, null);
             background.Draw(spriteBatch);
+            spriteBatch.End();
+
+            // Background Tiles
+            drawHandler.BeginEffect(spriteBatch, ref _graphicsDevice, ref targets, darken);
+            levelManager.DrawBackground(spriteBatch);
+            spriteBatch.End();
+
+            // Foreground Tiles
+            drawHandler.BeginEffect(spriteBatch, ref _graphicsDevice, ref targets, null);
+            levelEditor.DrawCanvas(spriteBatch);
+            levelManager.Draw(spriteBatch);
+            spriteBatch.End();
+
+            // Enemies
+            drawHandler.BeginEffect(spriteBatch, ref _graphicsDevice, ref targets, null);
             if (!levelEditor.visible) {
                 enemyManager.Draw(spriteBatch);
             }
-            levelManager.Draw(spriteBatch);
-            levelEditor.DrawCanvas(spriteBatch);
             spriteBatch.End();
 
-            // Player w/ effect
-            drawHandler.BeginEffect(spriteBatch, ref _graphicsDevice, ref targets, EffectType.test);
+            // Player
+            drawHandler.BeginEffect(spriteBatch, ref _graphicsDevice, ref targets, fx);
             player.Draw(spriteBatch);
             spriteBatch.End();
 
+            // Draws all of the "effect layers" (render targets)
             drawHandler.DrawTargets(spriteBatch, ref targets);
 
+            // UI is drawn completely separately
             drawHandler.DrawUI(spriteBatch);
             if (paused) {
                 pausePanel.Draw(spriteBatch);

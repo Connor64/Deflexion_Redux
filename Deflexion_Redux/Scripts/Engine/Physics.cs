@@ -61,7 +61,7 @@ namespace Deflexion_Redux {
             }
 
             if (bodyType == BodyType.Player) {
-                position = tileCollision(position + velocity * deltaTime, LevelManager.Instance.tiles);
+                position = tileCollision(position + velocity * deltaTime, LevelManager.Instance.foregroundTiles);
             } else {
                 position += velocity * deltaTime;
             }

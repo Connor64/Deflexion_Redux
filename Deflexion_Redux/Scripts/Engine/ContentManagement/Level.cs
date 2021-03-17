@@ -10,19 +10,33 @@ namespace Deflexion_Redux {
         public int width;
         public int height;
         public string name;
-        public Tile[] tiles;
+        public Tile[] foregroundTiles;
+        public Tile[] backgroundTiles;
         public EnemyTile[] enemies;
 
-        public Level(Tile[,] tileArray, EnemyTile[,] enemyArray) {
-            width = tileArray.GetLength(0);
-            height = tileArray.GetLength(1);
-            tiles = new Tile[width * height];
+        public Level(Tile[,] foregroundTileArray, Tile[,] backgroundTileArray, EnemyTile[,] enemyArray) {
+            width = foregroundTileArray.GetLength(0);
+            height = foregroundTileArray.GetLength(1);
+            foregroundTiles = new Tile[width * height];
+            backgroundTiles = new Tile[width * height];
             enemies = new EnemyTile[width * height];
             int i = 0;
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
-                    tiles[i] = tileArray[x, y];
+                    if (foregroundTileArray[x, y] == null) {
+                        foregroundTiles[i] = new Tile();
+                    } else {
+                        foregroundTiles[i] = foregroundTileArray[x, y];
+                    }
+
+                    if (backgroundTileArray[x, y] == null) {
+                        backgroundTiles[i] = new Tile();
+                    } else {
+                        backgroundTiles[i] = foregroundTileArray[x, y];
+                    }
+
                     enemies[i] = enemyArray[x, y];
+                    backgroundTiles[i] = backgroundTileArray[x, y];
                     i++;
                 }
             }

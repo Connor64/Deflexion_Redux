@@ -91,6 +91,11 @@ namespace Deflexion_Redux {
             setText(text, alignment, 1);
         }
 
+        /// <summary>
+        /// Returns true if the mouse cursor is hovering over the panel
+        /// </summary>
+        /// <param name="scaled"></param>
+        /// <returns></returns>
         public bool isHovering(bool scaled) {
             Vector2 mousePosition = cam.getMousePosition(scaled);
 
@@ -135,10 +140,23 @@ namespace Deflexion_Redux {
             }
         }
 
+        /// <summary>
+        /// Sets position of panel relative to the center of the screen
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <param name="offset"></param>
+        /// <param name="scalar"></param>
         public void setScreenPosition(ScreenPosition pos, Vector2 offset, float scalar) {
             scalePosition(pos, cam.position, cam.virtualWidth * scalar, cam.virtualHeight * scalar, offset, scalar);
         }
 
+        /// <summary>
+        /// Sets position of panel relative to another panel
+        /// </summary>
+        /// <param name="parentPanel"></param>
+        /// <param name="pos"></param>
+        /// <param name="offset"></param>
+        /// <param name="scalar"></param>
         public void setRelativePosition(Panel parentPanel, ScreenPosition pos, Vector2 offset, float scalar) {
             float parentWidth = parentPanel.size.X * cam.scalar;
             float parentHeight = parentPanel.size.Y * cam.scalar;
@@ -153,7 +171,7 @@ namespace Deflexion_Redux {
                     position = parentPos + new Vector2((parentWidth - scaledSize.X) / 2, (parentHeight - scaledSize.Y) / 2) + offset * scalar;
                     break;
                 case ScreenPosition.TopCenter:
-                    position = parentPos + new Vector2(parentWidth - (scaledSize.X / 2), 0) + offset * scalar;
+                    position = parentPos + new Vector2((parentWidth - scaledSize.X) / 2, 0) + offset * scalar;
                     break;
                 case ScreenPosition.BottomCenter:
                     position = parentPos + new Vector2((parentWidth - scaledSize.X ) / 2, parentHeight - scaledSize.Y) + offset * scalar;

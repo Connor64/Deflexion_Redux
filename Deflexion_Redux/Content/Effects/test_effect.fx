@@ -1,6 +1,10 @@
 ﻿// Effect converts pixels in a texture to be grayscale by using the dot operation
 
-float Percentage;
+float Percentage = 1;
+// Default values will result in a lightening/darkening effect
+float RedRatio = 0.7f;
+float GreenRatio = 0.59f;
+float BlueRatio = 0.11f;
 
 sampler TextureSampler : register(s0);
 float4 PixelShaderFunction(float2 Tex: TEXCOORD0) : COLOR0
@@ -9,8 +13,8 @@ float4 PixelShaderFunction(float2 Tex: TEXCOORD0) : COLOR0
 	float r = Color.r;
 	float g = Color.g;
 	float b = Color.b;
-	Color.rgb = dot(Color.rgb, float3(0.7 * Percentage, 0.59 * Percentage, 0.11 * Percentage));
-	//r = r - (r - Color.rgb) * Percentage;
+	Color.rgb = dot(Color.rgb, float3(RedRatio * Percentage, GreenRatio * Percentage, BlueRatio * Percentage));
+	r = r - (r - Color.rgb) * Percentage;
 	g = g - (g - Color.rgb) * Percentage;
 	b = b - (b - Color.rgb) * Percentage;
 	Color.r = r;
